@@ -76,15 +76,15 @@ const CM={
   ITSC:{full:'IT Steering Committee',q:'Should the County commit resources, authorize funding, and formally accept residual risk?',sla:'15 business days',chair:'CIO',quorum:'Chair + County manager or deputy + Finance director + at least 50% of voting seats',voting:['CIO (chair)','County manager or deputy','Department directors — rotating (2–3 seats)','Finance director or deputy','County attorney (advisory/voting as needed)'],advisory:['PPRC chair','CISO','Enterprise architect','Communications/change management'],triggers:['Cost above $100K or multi-year funding needed','Enterprise-wide or statutory service impact','Formal risk acceptance required','IT Portfolio Fund gate decision','Cross-department priority conflict'],outcomes:['Approve (enterprise commitment made)','Approve with conditions','Defer (insufficient information)','Reject (not aligned to strategy)','Escalate to County manager or County Board'],doesNot:['Design technical solutions (ASC)','Assess security/architecture risk (ASC/SPRC)','Set department priorities (departments)','Manage project delivery tasks (PPRC)'],esc:[['Scope or budget exceeds authorized by more than 20%','ITSC emergency session required.'],['Cross-department conflict unresolved at PPRC','ITSC makes binding priority decision.'],['Critical risk acceptance','County manager formally notified. May require County Board action.']]}
 };
 
-const S={sec:'dashboard',tStep:0,tAns:[],tRes:null,comm:'PPRC',dPh:0,dSrch:'',pathSize:'small'};
-const NAV=[{id:'dashboard',l:'Dashboard',i:'◈'},{id:'triage',l:'Triage wizard',i:'◎'},{id:'docs',l:'Document library',i:'▤'},{id:'flow',l:'Process flow',i:'⇢'},{id:'committees',l:'Committee hub',i:'◉'},{id:'sla',l:'SLA standards',i:'◇'},{id:'path',l:'Governance paths',i:'⬡'}];
+const S={sec:'dashboard',tStep:-1,tAns:[],tRes:null,comm:'PPRC',dPh:0,dSrch:'',pathSize:'small',esgTab:'overview',esgMode:false};
+const NAV=[{id:'dashboard',l:'Dashboard',i:'◈'},{id:'triage',l:'Triage wizard',i:'◎'},{id:'docs',l:'Document library',i:'▤'},{id:'flow',l:'Process flow',i:'⇢'},{id:'committees',l:'Committee hub',i:'◉'},{id:'sla',l:'SLA standards',i:'◇'},{id:'path',l:'Governance paths',i:'⬡'},{id:'esg',l:'Enterprise systems',i:'◊'}];
 
 function go(s){S.sec=s;render();buildNav();}
 function buildNav(){
   document.getElementById('nv').innerHTML=NAV.map(i=>`<button class=&quot;ni${S.sec===i.id?' on':''}&quot; onclick=&quot;go('${i.id}')&quot;>${i.i} ${i.l}</button>`).join('');
 }
 function render(){
-  const fns={dashboard:dash,triage:triage,docs:docs,flow:flow,committees:comm,sla:sla,path:pathView};
+  const fns={dashboard:dash,triage:triage,docs:docs,flow:flow,committees:comm,sla:sla,path:pathView,esg:esgView};
   document.getElementById('mn').innerHTML=(fns[S.sec]||dash)();
   const si=document.querySelector('input[type=search]');
   if(si)si.addEventListener('input',function(){S.dSrch=this.value;render();});
@@ -107,6 +107,34 @@ function dash(){
 
 // ── TRIAGE ─────────────────────────────────────────────────────────────────
 function triage(){
+  // Pre-question: is this about an existing enterprise system?
+  if(S.tStep===-1&amp;&amp;!S.tRes){
+    return `<div style=&quot;max-width:560px&quot;>
+    <div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Pre-intake triage wizard</div><div style=&quot;font-size:12px;color:#888&quot;>First, let\'s determine which governance path applies.</div></div>
+    <div class=&quot;card&quot; style=&quot;margin-bottom:10px;border:2px solid #0F6E56&quot;>
+      <div style=&quot;display:inline-flex;background:#E1F5EE;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#085041;margin-bottom:10px&quot;>STEP 0 OF 7</div>
+      <div style=&quot;font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:8px;line-height:1.45&quot;>Is this work related to an existing enterprise system already in production?</div>
+      <div style=&quot;font-size:12px;color:#666;padding:8px 12px;background:#E1F5EE;border-left:2px solid #0F6E56;margin-bottom:14px&quot;>Examples of enterprise systems: ERP (financial/HR), EHR/eHealth, justice/courts system, HR/payroll platform, permitting system, case management platform. <strong>If you are proposing a brand-new system</strong>, answer No.</div>
+      <div style=&quot;display:flex;gap:10px&quot;>
+        <button class=&quot;tqbtn&quot; onclick=&quot;setEsgMode(true)&quot; style=&quot;background:#E1F5EE;color:#085041;border-color:#0F6E56&quot;>Yes — this is an existing enterprise system</button>
+        <button class=&quot;tqbtn&quot; onclick=&quot;setEsgMode(false)&quot; style=&quot;background:#f8f9fa;color:#666&quot;>No — new project or not sure</button>
+      </div>
+    </div></div>`;
+  }
+  // ESG-specific branch
+  if(S.esgMode&amp;&amp;!S.tRes&amp;&amp;S.tStep===0){
+    return `<div style=&quot;max-width:560px&quot;>
+    <div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Enterprise system governance path</div><div style=&quot;font-size:12px;color:#888&quot;>You indicated this is an existing enterprise system. Use the question below to find the right path.</div></div>
+    <div class=&quot;card&quot; style=&quot;margin-bottom:10px;border:2px solid #0F6E56&quot;>
+      <div style=&quot;font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:10px&quot;>Is this work routine operational work — patching, configuration, break/fix, or standard user access changes?</div>
+      <div style=&quot;display:flex;gap:10px;margin-bottom:14px&quot;>
+        <button class=&quot;tqbtn&quot; onclick=&quot;setEsgOperational()&quot; style=&quot;background:#E1F5EE;color:#085041;border-color:#0F6E56&quot;>Yes — routine operational</button>
+        <button class=&quot;tqbtn&quot; onclick=&quot;setEsgEnhancement()&quot; style=&quot;background:#f8f9fa;color:#666&quot;>No — enhancement, investment, or lifecycle decision</button>
+      </div>
+    </div>
+    <button onclick=&quot;resetT()&quot; style=&quot;padding:8px 18px;background:#fff;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:\'Segoe UI\',sans-serif;color:#333&quot;>&amp;#8634; Start over</button>
+    </div>`;
+  }
   if(S.tRes){
     const r=S.tRes;
     return `<div style=&quot;max-width:560px&quot;><div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Pre-intake triage wizard</div><div style=&quot;font-size:12px;color:#888&quot;>Governance path determined from your answers.</div></div>
@@ -137,7 +165,10 @@ function tAns(a){
   }else{S.tStep++;}
   render();
 }
-function resetT(){S.tStep=0;S.tAns=[];S.tRes=null;render();}
+function setEsgMode(isEsg){S.esgMode=isEsg;S.tStep=isEsg?0:0;render();}
+function setEsgOperational(){S.tRes={path:'Operational work — ESOC governance only',desc:'Routine operational changes to enterprise systems are handled through ESOC and standard change management. No IT governance intake (RC-GOV-006) is required. Log the work and ensure IS/Capability Team executes under established change management procedures.',comms:[],sla:'No SLA — handled through change management',next:'Log in ESOC meeting or IS change management. No intake form needed.',bg:'#f5f6f7',bd:'#d0d0d0',tx:'#555'};render();}
+function setEsgEnhancement(){S.tRes={path:'Enterprise system enhancement — use ESG + IT governance',desc:'Enhancements, investments, or lifecycle decisions for existing enterprise systems must be classified (Operational / Small / Medium / Large) and routed through the appropriate governance path. The ESOC validates scope and escalates to PPRC via the standard IT intake form.',comms:['ESOC','PPRC'],sla:'Depends on classification: PPRC triage 5 days; ASC/SPRC 10 days each; ITSC 15 days from all committee outputs',next:'Complete RC-ESG-004 Quarterly Review or RC-ESG-005 Annual Plan to surface this item, then submit RC-GOV-004 triage + RC-GOV-006 intake to PPRC.',bg:'#E1F5EE',bd:'#0F6E56',tx:'#085041'};render();}
+function resetT(){S.tStep=-1;S.tAns=[];S.tRes=null;S.esgMode=false;render();}
 
 // ── DOCS ───────────────────────────────────────────────────────────────────
 function docs(){
@@ -322,6 +353,143 @@ function pathView(){
   <span><span style=&quot;display:inline-block;width:11px;height:11px;border-radius:50%;background:#e8e8e8;border:2px solid #bbb;vertical-align:middle;margin-right:4px&quot;></span>Conditional</span>
 </div>
 ${P.steps.map((st,i)=>stepCard(st,i)).join('')}`;
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  ESG DATA
+// ══════════════════════════════════════════════════════════════════════
+const ESG_DOCS=[
+  {id:'001',t:'Enterprise Systems Governance Charter',phase:'A — Governing framework',desc:'Authoritative governing document — purpose, structure, ESOC roles, decision rights, thresholds, and cadence.',ty:'Redesigned'},
+  {id:'002',t:'Enterprise System Profile &amp; Registration',phase:'B — Register your system',desc:'Complete once to designate a system — ownership, data classification, architecture, contracts, financials, and risk register.',ty:'Template'},
+  {id:'003',t:'Operational Handbook — Enterprise Systems',phase:'C — Run ongoing governance',desc:'Step-by-step procedures: designation, monthly ESOC reviews, enhancement routing, vendor renewals, and escalation matrix.',ty:'Redesigned'},
+  {id:'004',t:'Quarterly Service Review Pack',phase:'C — Run ongoing governance',desc:'Recurring quarterly template — KPIs, incidents, changes, vendor performance, financials, risk, backlog, and decisions.',ty:'Template'},
+  {id:'005',t:'Annual Operating Plan &amp; Roadmap Submission',phase:'D — Annual planning cycle',desc:'Submitted annually in Q3 — service outcomes, operations plan, enhancement roadmap, funding, risk outlook, and decisions requested.',ty:'Template'},
+  {id:'006',t:'Lifecycle Review Package — Modernize / Replace / Retire',phase:'E — Strategic lifecycle decision',desc:'Options analysis, TCO, risk assessment, and governance routing for major lifecycle decisions. Routes to ASC/SPRC/ITSC.',ty:'Template'},
+];
+
+const ESG_CADENCE=[
+  {period:'Monthly',title:'ESOC Operational Review',who:'Business Owner + IS/Capability Team',items:['System KPI dashboard','Open problems and root cause','Change/release summary','Backlog snapshot'],doc:'RC-ESG-003',c:{bg:'#E1F5EE',bd:'#0F6E56',tx:'#085041'}},
+  {period:'Quarterly',title:'Executive Service Review',who:'Business Owner + IS + ESOC Chair',items:['Service health vs KPI targets','Vendor performance and contract status','Financial snapshot (run + change)','Risk and compliance update'],doc:'RC-ESG-004',c:{bg:'#E6F1FB',bd:'#185FA5',tx:'#0C447C'}},
+  {period:'Annually\n(Q3)',title:'Operating Plan &amp; Roadmap Submission',who:'Business Owner + Technical Owner',items:['Service outcomes and priorities','Baseline operations plan','Annual enhancement roadmap','Funding and capacity plan'],doc:'RC-ESG-005',c:{bg:'#FAEEDA',bd:'#854F0B',tx:'#633806'}},
+  {period:'Every 2–3 yrs\nor triggered',title:'Lifecycle Review',who:'Business Owner + Technical Owner',items:['TCO analysis (3–5 year)','Vendor EOL and roadmap assessment','Options analysis (modernize/replace/retire)','Route to ASC / SPRC / ITSC'],doc:'RC-ESG-006',c:{bg:'#FCEBEB',bd:'#A32D2D',tx:'#791F1F'}},
+];
+
+const ESG_ROUTING=[
+  {cls:'Operational',criteria:'Recurring/routine; no material capability change; within standards and budget',path:'ESOC visibility → IS/Capability Team executes under change management',auth:'IS Ops Management',bg:'#f5f6f7',c:'#555'},
+  {cls:'Small (<$50K)',criteria:'Under $50K; low risk; limited enterprise impact',path:'Submit RC-GOV-006 intake → PPRC review → ASC/SPRC only if routing tree triggers',auth:'PPRC within delegated authority',bg:'#E6F1FB',c:'#0C447C'},
+  {cls:'Medium ($50K–$500K)',criteria:'Moderate integration, risk, or cross-department impact',path:'RC-GOV-006 → PPRC → ASC/SPRC as triggered → ITSC if escalated',auth:'CIO/exec as delegated',bg:'#FAEEDA',c:'#633806'},
+  {cls:'Large (>$500K)',criteria:'Multi-year, high-risk, statutory, or enterprise-wide impact',path:'Full governance path: PPRC → ASC → SPRC → ITSC (all required)',auth:'ITSC + County leadership',bg:'#FCEBEB',c:'#791F1F'},
+  {cls:'Lifecycle Decision',criteria:'Modernize / replace / retire — any cost if enterprise-wide',path:'RC-ESG-006 package → ASC → SPRC → ITSC. Submit RC-GOV-006 intake.',auth:'ITSC / County leadership',bg:'#EAD1DC',c:'#7030A0'},
+];
+
+// ══════════════════════════════════════════════════════════════════════
+//  ESG VIEW
+// ══════════════════════════════════════════════════════════════════════
+function esgView(){
+  const tabs=[{k:'overview',l:'Overview &amp; structure'},{k:'cadence',l:'Governance cadence'},{k:'routing',l:'Enhancement routing'},{k:'documents',l:'ESG documents'}];
+  function tabBtn(k,l){return `<button onclick=&quot;S.esgTab='${k}';render()&quot; style=&quot;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Segoe UI',sans-serif;border:1px solid ${S.esgTab===k?'#0F6E56':'#d0d0d0'};background:${S.esgTab===k?'#E1F5EE':'#fff'};color:${S.esgTab===k?'#085041':'#666'}&quot;>${l}</button>`;}
+  
+  let content='';
+
+  if(S.esgTab==='overview'){
+    content=`<div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px&quot;>
+      <div class=&quot;card&quot;>
+        <div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>What is Enterprise Systems Governance?</div>
+        <div style=&quot;font-size:12px;color:#555;line-height:1.6;margin-bottom:10px&quot;>Enterprise Systems Governance (ESG) ensures that large, mission-critical systems <strong>already in production</strong> — ERP, EHR/eHealth, justice systems, HR/payroll — are managed with disciplined oversight of service outcomes, risk, cost, vendor performance, and lifecycle.</div>
+        <div style=&quot;font-size:12px;color:#555;line-height:1.6&quot;>It is an <strong>extension</strong> of IT governance, not a replacement. The ESOC manages day-to-day operations. When work crosses cost, risk, or enterprise thresholds, it enters standard IT governance via the RC-GOV-006 intake.</div>
+      </div>
+      <div class=&quot;card&quot;>
+        <div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>Governance structure</div>
+        ${[['ESOC','Enterprise System Owners Council','Operational oversight, monthly reviews, backlog shaping, escalation decisions','#E1F5EE','#0F6E56'],['PPRC','Project &amp; Portfolio Review','Portfolio prioritization for enhancements at project thresholds','#E6F1FB','#185FA5'],['ASC','Architecture &amp; Standards','Architecture alignment, integration review, standards enforcement','#FAEEDA','#854F0B'],['SPRC','Security, Privacy &amp; Risk','Security, privacy, compliance, and vendor risk assessment','#FCEBEB','#A32D2D'],['ITSC','IT Steering Committee','Executive funding, lifecycle direction, risk acceptance','#EEEDFE','#534AB7']].map(([name,full,role,bg,bd])=>`
+          <div style=&quot;display:flex;gap:8px;align-items:flex-start;padding:7px 8px;background:${bg};border-radius:4px;margin-bottom:4px&quot;>
+            <span style=&quot;font-size:11px;font-weight:700;color:${bd};min-width:44px;padding:1px 0&quot;>${name}</span>
+            <div><div style=&quot;font-size:11px;font-weight:600;color:${bd}&quot;>${full}</div><div style=&quot;font-size:10px;color:#555&quot;>${role}</div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class=&quot;card&quot;>
+      <div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>How ESG connects to IT governance</div>
+      <div style=&quot;display:flex;gap:0;align-items:stretch;overflow-x:auto&quot;>
+        ${[['Enterprise system\nwork identified','ESOC','#0F6E56','E1F5EE'],['Is it\noperational?','Decision point','#854F0B','FAEEDA'],['Execute via\nchange management','IS/Capability Team','#555','f5f6f7'],['Submit RC-GOV-006\nIT intake form','Project threshold\ncrossed','#185FA5','E6F1FB'],['PPRC → ASC/SPRC\n→ ITSC as required','IT governance path','#534AB7','EEEDFE'],['Gate 2 closeout\nor ESOC returns to\nongoing oversight','Completion','#0F6E56','E1F5EE']].map(([t,sub,c,bg],i)=>`
+          <div style=&quot;display:flex;align-items:center;flex-shrink:0&quot;>
+            <div style=&quot;background:#${bg};border:1px solid #${c}40;border-radius:6px;padding:10px 12px;min-width:130px;max-width:150px;text-align:center&quot;>
+              <div style=&quot;font-size:11px;font-weight:700;color:#${c};line-height:1.3;margin-bottom:3px&quot;>${t}</div>
+              <div style=&quot;font-size:9px;color:#888;font-style:italic&quot;>${sub}</div>
+            </div>
+            ${i<5?`<div style=&quot;color:#ccc;font-size:20px;margin:0 4px;flex-shrink:0&quot;>&amp;#8594;</div>`:''}
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  else if(S.esgTab==='cadence'){
+    content=`<div style=&quot;margin-bottom:10px;font-size:12px;color:#888&quot;>The four governance cycles that keep enterprise systems managed throughout the year. Each cycle has a defined format, artifact, and decision output.</div>
+    ${ESG_CADENCE.map(c=>`<div style=&quot;background:${c.c.bg};border:1px solid ${c.c.bd}40;border-radius:8px;padding:14px 16px;margin-bottom:10px&quot;>
+      <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:6px&quot;>
+        <div>
+          <div style=&quot;font-size:16px;font-weight:700;color:${c.c.tx};margin-bottom:2px&quot;>${c.title}</div>
+          <div style=&quot;font-size:11px;color:#555&quot;>Owned by: ${c.who}</div>
+        </div>
+        <div style=&quot;text-align:right&quot;>
+          <div style=&quot;background:${c.c.bd};color:#fff;border-radius:100px;padding:3px 12px;font-size:11px;font-weight:700;white-space:nowrap&quot;>${c.period}</div>
+          <div style=&quot;font-size:10px;color:#888;margin-top:3px&quot;>Artifact: ${c.doc}</div>
+        </div>
+      </div>
+      <div style=&quot;display:flex;flex-wrap:wrap;gap:6px&quot;>
+        ${c.items.map(item=>`<span style=&quot;background:rgba(255,255,255,0.7);border:1px solid ${c.c.bd}30;border-radius:4px;padding:3px 8px;font-size:11px;color:${c.c.tx}&quot;>&amp;#10003; ${item}</span>`).join('')}
+      </div>
+    </div>`).join('')}
+    <div style=&quot;background:#EAF3DE;border-left:3px solid #3B6D11;padding:10px 14px;margin-top:6px;font-size:11px;color:#27500A;line-height:1.5&quot;>
+      <strong>Annual roadmap alignment:</strong> The Q3 Annual Operating Plan submission (RC-ESG-005) feeds directly into the County-wide IT roadmap intake cycle (RC-GOV-005). Enhancement items from the roadmap that meet project thresholds are submitted via RC-GOV-006 beginning Q1 of the following year.
+    </div>`;
+  }
+
+  else if(S.esgTab==='routing'){
+    content=`<div style=&quot;margin-bottom:10px;font-size:12px;color:#888&quot;>How enterprise system enhancement and investment requests are classified and routed. The same County thresholds apply, with additional triggers specific to enterprise systems.</div>
+    ${ESG_ROUTING.map(r=>`<div style=&quot;display:flex;gap:10px;padding:10px 12px;background:${r.bg};border-radius:6px;margin-bottom:6px;align-items:flex-start&quot;>
+      <div style=&quot;min-width:130px;flex-shrink:0&quot;><div style=&quot;font-size:12px;font-weight:700;color:${r.c}&quot;>${r.cls}</div><div style=&quot;font-size:10px;color:#888;margin-top:2px&quot;>Authority: ${r.auth}</div></div>
+      <div style=&quot;flex:1&quot;>
+        <div style=&quot;font-size:11px;color:#555;margin-bottom:4px;font-style:italic&quot;>${r.criteria}</div>
+        <div style=&quot;font-size:12px;color:#333;font-weight:500&quot;>&amp;#8594; ${r.path}</div>
+      </div>
+    </div>`).join('')}
+    <div style=&quot;background:#FAEEDA;border-left:3px solid #854F0B;padding:10px 14px;margin-top:6px;font-size:11px;color:#633806;line-height:1.5&quot;>
+      <strong>ESG-specific governance triggers (route to IT governance regardless of cost):</strong> Contract renewal with material cost/scope/risk change &amp;middot; Residual High or Critical risk requiring executive risk acceptance &amp;middot; New data sharing agreement or changed data classification &amp;middot; Change affecting shared integrations or other enterprise systems
+    </div>`;
+  }
+
+  else if(S.esgTab==='documents'){
+    const phases=[...new Set(ESG_DOCS.map(d=>d.phase))];
+    const phColors={'A — Governing framework':['#E1F5EE','#0F6E56'],'B — Register your system':['#E6F1FB','#185FA5'],'C — Run ongoing governance':['#FAEEDA','#854F0B'],'D — Annual planning cycle':['#EAD1DC','#7030A0'],'E — Strategic lifecycle decision':['#FCEBEB','#A32D2D']};
+    content=phases.map(ph=>{
+      const [bg,bd]=phColors[ph]||['#f5f6f7','#555'];
+      const docs=ESG_DOCS.filter(d=>d.phase===ph);
+      return `<div style=&quot;margin-bottom:16px&quot;>
+        <div style=&quot;display:flex;align-items:center;gap:8px;margin-bottom:8px&quot;>
+          <div style=&quot;width:8px;height:8px;border-radius:50%;background:${bd};flex-shrink:0&quot;></div>
+          <span style=&quot;font-size:12px;font-weight:600;color:#1a1a1a&quot;>Phase ${ph}</span>
+        </div>
+        <div style=&quot;display:grid;grid-template-columns:repeat(2,1fr);gap:8px&quot;>
+          ${docs.map(d=>`<div class=&quot;dcard&quot;>
+            <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px&quot;>
+              <span style=&quot;font-family:'Courier New',monospace;font-size:10px;font-weight:700;color:${bd};background:${bg};padding:2px 7px;border-radius:3px&quot;>RC-ESG-${d.id}</span>
+              <span style=&quot;background:#E1F5EE;color:#085041;border-radius:100px;font-size:9px;font-weight:600;padding:1px 6px&quot;>${d.ty}</span>
+            </div>
+            <div style=&quot;font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:4px;line-height:1.3&quot;>${d.t}</div>
+            <div style=&quot;font-size:11px;color:#666;line-height:1.5&quot;>${d.desc}</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  return `<div style=&quot;margin-bottom:12px&quot;>
+    <div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Enterprise systems governance</div>
+    <div style=&quot;font-size:12px;color:#888&quot;>Oversight framework for ERP, EHR/eHealth, justice, HR/payroll, and other designated mission-critical systems. Aligned to RC-GOV-003 IT Governance Charter.</div>
+  </div>
+  <div style=&quot;display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap&quot;>${tabs.map(t=>tabBtn(t.k,t.l)).join('')}</div>
+  ${content}`;
 }
 
 buildNav();render();
