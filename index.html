@@ -1,687 +1,329 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ramsey County IT Governance Portal</title>
-<style>
-/* ── Reset & Base ─────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; color: #1a1a1a; background: #f5f6f7; }
-
-/* ── Shell ────────────────────────────────────────────────────────────── */
-#gp { display: flex; height: 100vh; min-height: 600px; border: 1px solid #d8d8d8; border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-
-/* ── Sidebar nav ─────────────────────────────────────────────────────── */
-#sidebar { width: 180px; background: #f5f6f7; border-right: 1px solid #e0e0e0; display: flex; flex-direction: column; padding: 12px 8px; flex-shrink: 0; overflow-y: auto; }
-.nav-brand { padding: 6px 6px 14px; border-bottom: 1px solid #e0e0e0; margin-bottom: 10px; }
-.nav-brand-title { font-size: 13px; font-weight: 600; color: #1a1a1a; }
-.nav-brand-sub { font-size: 10px; color: #888; margin-top: 2px; }
-#navItems { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.nav-footer { padding-top: 10px; border-top: 1px solid #e0e0e0; font-size: 10px; color: #aaa; font-family: 'Courier New', monospace; }
-
-/* Nav items */
-.ni { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: none; background: none; width: 100%; text-align: left; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #666; font-family: 'Segoe UI', sans-serif; transition: all 0.12s; }
-.ni:hover { background: #fff; color: #1a1a1a; }
-.ni.on { background: #fff; color: #185FA5; border-radius: 0; border-left: 2px solid #185FA5; padding-left: 8px; }
-.ni .ico { font-size: 12px; }
-
-/* ── Main content ────────────────────────────────────────────────────── */
-#main { flex: 1; overflow-y: auto; background: #f0f1f3; padding: 18px; }
-
-/* ── Cards ───────────────────────────────────────────────────────────── */
-.card { background: #fff; border: 1px solid #e8e8e8; border-radius: 8px; padding: 14px 16px; }
-.dcard { background: #fff; border: 1px solid #e8e8e8; border-radius: 6px; padding: 12px; transition: border-color 0.12s; }
-.dcard:hover { border-color: #c0c0c0; }
-
-/* ── Metric tiles ────────────────────────────────────────────────────── */
-.metric { border-radius: 0; padding: 10px 12px; border-left: 2px solid; background: #f8f9fa; }
-
-/* ── Buttons ─────────────────────────────────────────────────────────── */
-.fbtn { border: 1px solid #d0d0d0; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 500; cursor: pointer; font-family: 'Segoe UI', sans-serif; color: #555; background: #fff; transition: all 0.12s; }
-.fbtn:hover { background: #f0f0f0; }
-.fbtn.on { background: #E6F1FB; color: #0C447C; border-color: #185FA5; }
-
-/* ── Committee tabs ──────────────────────────────────────────────────── */
-.ctab { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: 'Segoe UI', sans-serif; border: 1px solid #d0d0d0; background: #fff; color: #666; transition: all 0.12s; }
-.ctab:hover { color: #1a1a1a; }
-
-/* ── Chips / badges ──────────────────────────────────────────────────── */
-.chip { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 100px; font-size: 10px; font-weight: 600; letter-spacing: 0.02em; }
-
-/* ── Triage buttons ──────────────────────────────────────────────────── */
-.tqbtn { flex: 1; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Segoe UI', sans-serif; border: 1px solid #d0d0d0; transition: all 0.12s; }
-.tqbtn:hover { border-color: #999; }
-
-/* ── Search input ────────────────────────────────────────────────────── */
-input[type=search] { border: 1px solid #d0d0d0; border-radius: 6px; padding: 6px 10px; font-size: 12px; font-family: 'Segoe UI', sans-serif; background: #fff; color: #1a1a1a; outline: none; width: 100%; }
-input[type=search]:focus { border-color: #185FA5; box-shadow: 0 0 0 2px rgba(24,95,165,0.12); }
-
-/* ── Tables ──────────────────────────────────────────────────────────── */
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-th { text-align: left; padding: 8px 10px; font-weight: 600; font-size: 11px; border-bottom: 1px solid #e0e0e0; color: #555; background: #f8f9fa; }
-td { padding: 7px 10px; border-bottom: 1px solid #eeeeee; vertical-align: top; color: #333; }
-tr:last-child td { border-bottom: none; }
-
-/* ── Swim lane placeholders ──────────────────────────────────────────── */
-.sw-placeholder { background: #fafafa; border: 1px dashed #d0d0d0; border-radius: 6px; padding: 10px; display: flex; align-items: center; justify-content: center; min-height: 80px; }
-
-/* ── Utility ─────────────────────────────────────────────────────────── */
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
-</style>
-</head>
-<body>
-<h2 class="sr-only">Ramsey County IT Governance Portal — interactive reference for the 21-document RC-GOV framework</h2>
-
-<div id="gp">
-  <!-- Sidebar -->
-  <nav id="sidebar">
-    <div class="nav-brand">
-      <div class="nav-brand-title">Ramsey County</div>
-      <div class="nav-brand-sub">IT Governance Portal</div>
-    </div>
-    <div id="navItems"></div>
-    <div class="nav-footer">Rev. 2025-01 &middot; 21 docs</div>
-  </nav>
-
-  <!-- Main -->
-  <main id="main"></main>
+<iframe src="about:blank" srcdoc="<!DOCTYPE html><html lang=&quot;en&quot;><head><meta charset=&quot;UTF-8&quot;><meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1.0&quot;><title>Ramsey County IT Governance Portal</title><style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:auto;background:#fff;font-family:'Segoe UI',-apple-system,sans-serif;font-size:13px;color:#1a1a1a}
+#gp{display:flex;height:680px;border:1px solid #d8d8d8;border-radius:8px;overflow:hidden;background:#fff;margin:8px}
+#sb{width:176px;background:#f5f6f7;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;padding:10px 8px;flex-shrink:0;overflow-y:auto}
+#mn{flex:1;overflow-y:auto;background:#f0f1f3;padding:16px}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 10px;border:none;background:none;width:100%;text-align:left;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;color:#666;font-family:'Segoe UI',sans-serif}
+.ni:hover{background:#fff;color:#1a1a1a}
+.ni.on{background:#fff;color:#185FA5;border-radius:0;border-left:2px solid #185FA5;padding-left:8px}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:14px 16px}
+.dcard{background:#fff;border:1px solid #e8e8e8;border-radius:6px;padding:12px;cursor:default}
+.dcard:hover{border-color:#bbb}
+.metric{padding:10px 12px;border-left:2px solid;background:#f8f9fa}
+.fbtn{border:1px solid #d0d0d0;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:500;cursor:pointer;font-family:'Segoe UI',sans-serif;color:#555;background:#fff}
+.fbtn:hover,.fbtn.on{background:#E6F1FB;color:#0C447C;border-color:#185FA5}
+.ctab{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Segoe UI',sans-serif;border:1px solid #d0d0d0;background:#fff;color:#666}
+.chip{display:inline-flex;align-items:center;padding:1px 7px;border-radius:100px;font-size:10px;font-weight:600}
+.tqbtn{flex:1;padding:10px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Segoe UI',sans-serif;border:1px solid #d0d0d0}
+input[type=search]{border:1px solid #d0d0d0;border-radius:6px;padding:6px 10px;font-size:12px;font-family:'Segoe UI',sans-serif;background:#fff;color:#1a1a1a;outline:none;width:100%}
+input[type=search]:focus{border-color:#185FA5}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:7px 10px;font-weight:600;font-size:11px;border-bottom:1px solid #e0e0e0;background:#f8f9fa;color:#555}
+td{padding:7px 10px;border-bottom:1px solid #eee;vertical-align:top;color:#333}
+tr:last-child td{border-bottom:none}
+</style></head><body><div id=&quot;gp&quot;>
+<nav id=&quot;sb&quot;>
+  <div style=&quot;padding:6px 4px 12px;border-bottom:1px solid #e0e0e0;margin-bottom:10px&quot;>
+    <div style=&quot;font-size:13px;font-weight:600;color:#1a1a1a&quot;>Ramsey County</div>
+    <div style=&quot;font-size:10px;color:#888;margin-top:2px&quot;>IT Governance Portal</div>
+  </div>
+  <div id=&quot;nv&quot; style=&quot;flex:1;display:flex;flex-direction:column;gap:2px&quot;></div>
+  <div style=&quot;padding-top:10px;border-top:1px solid #e0e0e0;font-size:10px;color:#aaa;font-family:'Courier New',monospace&quot;>Rev. 2025-01 · 21 docs</div>
+</nav>
+<main id=&quot;mn&quot;></main>
 </div>
-
 <script>
-/* ══════════════════════════════════════════════════════════════════════
-   DATA
-══════════════════════════════════════════════════════════════════════ */
-var PC=[null,
-  {bg:'#E6F1FB',bd:'#185FA5',tx:'#0C447C'},
-  {bg:'#E1F5EE',bd:'#0F6E56',tx:'#085041'},
-  {bg:'#FAEEDA',bd:'#854F0B',tx:'#633806'},
-  {bg:'#FCEBEB',bd:'#A32D2D',tx:'#791F1F'},
-  {bg:'#EEEDFE',bd:'#534AB7',tx:'#3C3489'},
-  {bg:'#EAF3DE',bd:'#3B6D11',tx:'#27500A'},
-  {bg:'#FAECE7',bd:'#993C1D',tx:'#712B13'},
-  {bg:'#FBEAF0',bd:'#993556',tx:'#72243E'},
+const CC={PPRC:{bg:'#E6F1FB',bd:'#185FA5',tx:'#0C447C'},ASC:{bg:'#FAEEDA',bd:'#854F0B',tx:'#633806'},SPRC:{bg:'#FCEBEB',bd:'#A32D2D',tx:'#791F1F'},ITSC:{bg:'#EEEDFE',bd:'#534AB7',tx:'#3C3489'}};
+const PC=[null,{bg:'#E6F1FB',bd:'#185FA5',tx:'#0C447C'},{bg:'#E1F5EE',bd:'#0F6E56',tx:'#085041'},{bg:'#FAEEDA',bd:'#854F0B',tx:'#633806'},{bg:'#FCEBEB',bd:'#A32D2D',tx:'#791F1F'},{bg:'#EEEDFE',bd:'#534AB7',tx:'#3C3489'},{bg:'#EAF3DE',bd:'#3B6D11',tx:'#27500A'},{bg:'#FAECE7',bd:'#993C1D',tx:'#712B13'},{bg:'#FBEAF0',bd:'#993556',tx:'#72243E'}];
+const TC={new:{bg:'#EAF3DE',tx:'#27500A'},enhanced:{bg:'#E6F1FB',tx:'#0C447C'},amended:{bg:'#FAEEDA',tx:'#633806'},recreated:{bg:'#EEEDFE',tx:'#3C3489'}};
+const PHASES=[{n:1,l:'Strategic framework'},{n:2,l:'Demand management'},{n:3,l:'Process &amp; flow'},{n:4,l:'Committee review tools'},{n:5,l:'Committee operations'},{n:6,l:'Records &amp; performance'},{n:7,l:'Special protocols'},{n:8,l:'Future state'}];
+const DOCS=[
+  {id:'001',t:'Executive brief',ph:1,ty:'recreated',d:'Overview for executive leadership — committees, size tiers, ITPF gates, and what governance delivers.'},
+  {id:'002',t:'IT governance scope',ph:1,ty:'recreated',d:'Definitive guide to what must route through governance. 8 scope categories with examples.'},
+  {id:'003',t:'IT governance charter',ph:1,ty:'amended',d:'Authoritative governing document. Includes Amendment RC-GOV-018 — PPRC is the formal routing authority.'},
+  {id:'004',t:'Pre-intake triage tool',ph:2,ty:'new',d:'6-question self-service routing tool. Determines governance path before submitting a full intake form.'},
+  {id:'005',t:'Work classification guide',ph:2,ty:'recreated',d:'Classify work as roadmap item, project, or operational. Full annual intake cycle calendar included.'},
+  {id:'006',t:'Project intake form',ph:2,ty:'enhanced',d:'Full intake form with Risk Pre-Screen (§5) and PPRC Use Only routing determination block.'},
+  {id:'007',t:'Operational handbook',ph:3,ty:'amended',d:'9-step workflow, RACI, escalation matrices, sample agendas, and the normative 7-question routing decision tree.'},
+  {id:'008',t:'Governance swim lane',ph:3,ty:'recreated',d:'Visual process flow across all four committees. Trigger quick-reference and path-by-size summary.'},
+  {id:'009',t:'Security &amp; privacy risk assessment',ph:4,ty:'enhanced',d:'SPRC review form covering data classification, vendor risk, privacy impact, and control assessment.'},
+  {id:'010',t:'Risk acceptance memo',ph:4,ty:'enhanced',d:'Formal executive risk acceptance. Required for High or Critical residual risk — signed by ITSC.'},
+  {id:'011',t:'Governance decision brief',ph:4,ty:'enhanced',d:'Standardized committee decision record. Filed in the decision log for every committee decision.'},
+  {id:'012',t:'Committee membership &amp; quorum',ph:5,ty:'recreated',d:'Seat types, alternates, quorum rules, voting procedures, and conflict of interest provisions.'},
+  {id:'013',t:'Committee chair playbook',ph:5,ty:'recreated',d:'Role-specific guidance for all four committee chairs — decision quality standards, techniques, checklists.'},
+  {id:'014',t:'Training &amp; decision artifacts',ph:5,ty:'recreated',d:'Onboarding guide for all members. Committee training cards, artifact requirements, threshold quick-reference.'},
+  {id:'015',t:'Governance decision log',ph:6,ty:'new',d:'Master register of all decisions across all four committees. Includes the open conditions tracker.'},
+  {id:'016',t:'SLA &amp; service standards',ph:6,ty:'new',d:'Response targets: PPRC 5 days, ASC/SPRC 10 days, ITSC 15 days. Consequences and quarterly KPIs.'},
+  {id:'017',t:'Portfolio health dashboard',ph:6,ty:'new',d:'Quarterly template: project register, open conditions, SLA performance, financial summary, chair narrative.'},
+  {id:'018',t:'Emergency fast lane protocol',ph:7,ty:'new',d:'5-step emergency path with CIO + CISO joint approval within 4 hours. ITSC review in 30 days.'},
+  {id:'019',t:'IT Portfolio Fund policy',ph:7,ty:'recreated',d:'Eligibility, stage-gated funding (Gate 0 / Gate 1 / Gate 2), and mandatory sustainment requirements.'},
+  {id:'020',t:'Benefits realization &amp; Gate 2 closeout',ph:7,ty:'new',d:'Benefits register, 12-item closeout checklist, lessons learned, and 4-signature Gate 2 approval.'},
+  {id:'021',t:'PPRC role separation recommendation',ph:8,ty:'new',d:'3-option structural recommendation for ITSC decision — Portfolio Health Subcommittee approach recommended.'},
 ];
-var CC={
-  PPRC:{bg:'#E6F1FB',bd:'#185FA5',tx:'#0C447C'},
-  ASC: {bg:'#FAEEDA',bd:'#854F0B',tx:'#633806'},
-  SPRC:{bg:'#FCEBEB',bd:'#A32D2D',tx:'#791F1F'},
-  ITSC:{bg:'#EEEDFE',bd:'#534AB7',tx:'#3C3489'},
-};
-var TC={
-  new:      {bg:'#EAF3DE',tx:'#27500A'},
-  enhanced: {bg:'#E6F1FB',tx:'#0C447C'},
-  amended:  {bg:'#FAEEDA',tx:'#633806'},
-  recreated:{bg:'#EEEDFE',tx:'#3C3489'}
-};
-
-var DOCS=[
-  {id:'001',title:'Executive brief',ph:1,type:'recreated',desc:'Overview for executive leadership — committees, size tiers, ITPF gates, and what governance delivers.'},
-  {id:'002',title:'IT governance scope',ph:1,type:'recreated',desc:'Definitive guide to what must route through governance and what does not. 8 scope categories with examples.'},
-  {id:'003',title:'IT governance charter',ph:1,type:'amended',desc:'Authoritative governing document. Includes Amendment RC-GOV-018 — PPRC is the formal routing authority.'},
-  {id:'004',title:'Pre-intake triage tool',ph:2,type:'new',desc:'6-question self-service routing tool. Determines governance path before submitting a full intake form.'},
-  {id:'005',title:'Work classification guide',ph:2,type:'recreated',desc:'Classify work as roadmap item, project, or operational. Full annual intake cycle calendar included.'},
-  {id:'006',title:'Project intake form',ph:2,type:'enhanced',desc:'Full intake form with Risk Pre-Screen (§5) and PPRC Use Only routing determination block.'},
-  {id:'007',title:'Operational handbook',ph:3,type:'amended',desc:'9-step workflow, RACI, escalation matrices, sample agendas, and the normative 7-question routing decision tree.'},
-  {id:'008',title:'Governance swim lane',ph:3,type:'recreated',desc:'Visual process flow across all four committees. Trigger quick-reference and path-by-size summary.'},
-  {id:'009',title:'Security & privacy risk assessment',ph:4,type:'enhanced',desc:'SPRC review form covering data classification, vendor risk, privacy impact, and control assessment.'},
-  {id:'010',title:'Risk acceptance memo',ph:4,type:'enhanced',desc:'Formal executive risk acceptance. Required for High or Critical residual risk — signed by ITSC.'},
-  {id:'011',title:'Governance decision brief',ph:4,type:'enhanced',desc:'Standardized committee decision record. Filed in the decision log for every committee decision.'},
-  {id:'012',title:'Committee membership & quorum',ph:5,type:'recreated',desc:'Seat types, alternates, quorum rules, voting procedures, and conflict of interest provisions for all four committees.'},
-  {id:'013',title:'Committee chair playbook',ph:5,type:'recreated',desc:'Role-specific guidance for all four committee chairs — decision quality standards, techniques, checklists.'},
-  {id:'014',title:'Training & decision artifacts',ph:5,type:'recreated',desc:'Onboarding guide for all members. Committee training cards, artifact requirements, threshold quick-reference.'},
-  {id:'015',title:'Governance decision log',ph:6,type:'new',desc:'Master register of all decisions across all four committees. Includes the open conditions tracker.'},
-  {id:'016',title:'SLA & service standards',ph:6,type:'new',desc:'Response targets: PPRC 5 days, ASC/SPRC 10 days, ITSC 15 days. Consequences and quarterly KPIs.'},
-  {id:'017',title:'Portfolio health dashboard',ph:6,type:'new',desc:'Quarterly template: project register, open conditions, SLA performance, financial summary, chair narrative.'},
-  {id:'018',title:'Emergency fast lane protocol',ph:7,type:'new',desc:'5-step emergency path with CIO + CISO joint approval within 4 hours. Retrospective ITSC review in 30 days.'},
-  {id:'019',title:'IT Portfolio Fund policy',ph:7,type:'recreated',desc:'Eligibility, stage-gated funding (Gate 0 / Gate 1 / Gate 2), and mandatory sustainment requirements.'},
-  {id:'020',title:'Benefits realization & Gate 2 closeout',ph:7,type:'new',desc:'Benefits register, 12-item closeout checklist, lessons learned, and 4-signature Gate 2 approval.'},
-  {id:'021',title:'PPRC role separation recommendation',ph:8,type:'new',desc:'3-option structural recommendation for ITSC decision — Portfolio Health Subcommittee approach recommended.'},
+const TQ=[
+  {q:'Does this involve new or changed technology?',h:'Software, hardware, cloud, SaaS, data system, or infrastructure change'},
+  {q:'Is the estimated total cost more than $50,000?',h:'Include first-year licensing, implementation, and ongoing support'},
+  {q:'Does this involve sensitive data?',h:'PII, HIPAA, CJIS, PCI, employee data, or resident/client records'},
+  {q:'Does this involve a new vendor or third-party service?',h:'Any vendor accessing County data or systems'},
+  {q:'Does this require enterprise integration?',h:'SSO, Active Directory, other County systems, APIs, or cross-department data sharing'},
+  {q:'Does this impact critical services or need multi-year funding?',h:'Public safety, statutory deadlines, cost above $100K, or enterprise-wide priority'},
 ];
-
-var PHASES=[
-  {n:1,label:'Strategic framework'},
-  {n:2,label:'Demand management'},
-  {n:3,label:'Process & flow'},
-  {n:4,label:'Committee review tools'},
-  {n:5,label:'Committee operations'},
-  {n:6,label:'Records & performance'},
-  {n:7,label:'Special protocols'},
-  {n:8,label:'Future state'},
-];
-
-var TQ=[
-  {q:'Does this involve new or changed technology?',hint:'Software, hardware, cloud, SaaS, data system, or infrastructure change'},
-  {q:'Is the estimated total cost more than $50,000?',hint:'Include first-year licensing, implementation, and ongoing support'},
-  {q:'Does this involve sensitive data?',hint:'PII, HIPAA, CJIS, PCI, employee data, or resident/client records'},
-  {q:'Does this involve a new vendor or third-party service?',hint:'Any vendor accessing County data or systems — SaaS, hosted, or managed service'},
-  {q:'Does this require enterprise integration?',hint:'SSO, Active Directory, other County systems, APIs, or cross-department data sharing'},
-  {q:'Does this impact critical services or need multi-year funding?',hint:'Public safety, statutory deadlines, cost above $100K, or enterprise-wide priority'},
-];
-
-var COMM={
-  PPRC:{
-    full:'Project & Portfolio Review Committee',
-    q:'Should this be a project? Does it fit the portfolio? Is it worth doing now?',
-    sla:'5 business days',chair:'Portfolio manager',
-    quorum:'Chair or delegate + CIO or Deputy + Finance/Budget + at least 50% of remaining voting seats',
-    voting:['Portfolio manager (chair)','CIO or deputy CIO','IS/capability lead — applications','IS/capability lead — infrastructure','Finance/budget representative','Rotating dept. business owners (2–3)'],
-    advisory:['Enterprise architecture lead','Information security lead','Procurement/contracting','Grants/program funding'],
-    triggers:['New IT work at or above $50K','Work requiring dedicated project resources','Cross-department impact or conflict','Enterprise system upgrade or replacement'],
-    outcomes:['Approve','Approve with conditions','Defer (more information needed)','Reject with documented rationale','Route to ASC / SPRC / ITSC'],
-    doesNot:['Define technical solutions','Accept security/privacy risk','Set department business priorities','Override ITSC funding decisions'],
-    esc:[['Cost exceeds large project threshold (> $100K)','Route to full path. ITSC required.'],['Requestor disputes classification','PPRC chair makes final determination.'],['No portfolio capacity','CIO notified. ITSC queue for priority discussion.']],
-  },
-  ASC:{
-    full:'Architecture & Standards Committee',
-    q:'Is this the right technical solution? Does it align to enterprise standards?',
-    sla:'10 business days',chair:'Enterprise architect',
-    quorum:'Chair or delegate + at least 50% of voting seats + at least 2 architect roles relevant to the item',
-    voting:['Enterprise architect (chair)','Solution architect — core enterprise','Solution architect — justice/public safety','Solution architect — health/human services','Infrastructure/cloud architect','Data/integration architect'],
-    advisory:['Security/privacy representative','Application delivery leads','Business analyst / PM'],
-    triggers:['New enterprise system or major replacement','Significant integration or data exchange','Cloud, SaaS, or infrastructure change','Enterprise platform impact (SSO, AD, network)'],
-    outcomes:['Approve (meets standards)','Approve with conditions','Exception required (ITSC notified)','Reject (fundamental architectural problem)'],
-    doesNot:['Approve business cases or funding','Assess security/privacy risk','Override PPRC priority decisions','Manage project delivery tasks'],
-    esc:[['Solution violates mandatory enterprise standards','CIO notified. Exception requires ITSC review.'],['Cross-department dependency not in original scope','PPRC and ITSC notified. Impact assessment required.'],['Decision cannot be reached in one meeting','Deferred with specific information request documented.']],
-  },
-  SPRC:{
-    full:'Security, Privacy & Risk Committee',
-    q:'Are the security, privacy, and vendor risks acceptable and managed?',
-    sla:'10 business days',chair:'CISO',
-    quorum:'Chair or delegate + Privacy officer + at least 50% of voting seats',
-    voting:['CISO (chair)','Privacy officer','Information security analyst/lead','Compliance/legal representative','IT operations security lead','Rotating dept. representative'],
-    advisory:['Enterprise architecture (ASC liaison)','Procurement/vendor management','Human resources (employee data)','External legal counsel (as needed)'],
-    triggers:['PII, HIPAA, CJIS, PCI, or sensitive data','External vendor hosting or data access','New or increased security/privacy risk','Changes to cybersecurity posture or remote access'],
-    outcomes:['Approve (risks acceptable)','Approve with conditions','Risk acceptance required (routes to ITSC)','Defer (assessment incomplete)','Reject (unacceptable risk)'],
-    doesNot:['Make business case decisions','Approve architecture or standards','Authorize project funding','Formally accept risk — ITSC authority only'],
-    esc:[['Residual risk is High or Critical','RC-GOV-010 Risk Acceptance Memo required. ITSC must accept.'],['Vendor fails security questionnaire','CIO and PPRC notified. Project halted pending resolution.'],['Active security incident during review','CISO leads incident response. Review paused until resolved.']],
-  },
-  ITSC:{
-    full:'IT Steering Committee',
-    q:'Should the County commit resources, authorize funding, and formally accept residual risk?',
-    sla:'15 business days',chair:'CIO',
-    quorum:'Chair + County manager or deputy + Finance director + at least 50% of voting seats',
-    voting:['CIO (chair)','County manager or deputy','Department directors — rotating (2–3 seats)','Finance director or deputy','County attorney (advisory/voting as needed)'],
-    advisory:['PPRC chair','CISO','Enterprise architect','Communications/change management'],
-    triggers:['Cost above $100K or multi-year funding needed','Enterprise-wide or statutory service impact','Formal risk acceptance required','IT Portfolio Fund gate decision','Cross-department priority conflict'],
-    outcomes:['Approve (enterprise commitment made)','Approve with conditions','Defer (insufficient information)','Reject (not aligned to strategy)','Escalate to County manager or County Board'],
-    doesNot:['Design technical solutions (ASC)','Assess security/architecture risk (ASC/SPRC)','Set department priorities (departments)','Manage project delivery tasks (PPRC)'],
-    esc:[['Scope or budget exceeds authorized by more than 20%','ITSC emergency session required.'],['Cross-department conflict unresolved at PPRC level','ITSC makes binding priority decision.'],['Critical risk acceptance','County manager formally notified. May require County Board action.']],
-  },
+const CM={
+  PPRC:{full:'Project &amp; Portfolio Review Committee',q:'Should this be a project? Does it fit the portfolio? Is it worth doing now?',sla:'5 business days',chair:'Portfolio manager',quorum:'Chair or delegate + CIO or Deputy + Finance + at least 50% of remaining voting seats',voting:['Portfolio manager (chair)','CIO or deputy CIO','IS/capability lead — applications','IS/capability lead — infrastructure','Finance/budget representative','Rotating dept. business owners (2–3)'],advisory:['Enterprise architecture lead','Information security lead','Procurement/contracting','Grants/program funding'],triggers:['New IT work at or above $50K','Work requiring dedicated project resources','Cross-department impact or conflict','Enterprise system upgrade or replacement'],outcomes:['Approve','Approve with conditions','Defer (more information needed)','Reject with documented rationale','Route to ASC / SPRC / ITSC'],doesNot:['Define technical solutions','Accept security/privacy risk','Set department business priorities','Override ITSC funding decisions'],esc:[['Cost exceeds large project threshold','Route to full path. ITSC required.'],['Requestor disputes classification','PPRC chair makes final determination.'],['No portfolio capacity','CIO notified. ITSC queue for priority discussion.']]},
+  ASC:{full:'Architecture &amp; Standards Committee',q:'Is this the right technical solution? Does it align to enterprise standards?',sla:'10 business days',chair:'Enterprise architect',quorum:'Chair or delegate + at least 50% of voting seats + at least 2 architect roles relevant to the item',voting:['Enterprise architect (chair)','Solution architect — core enterprise','Solution architect — justice/public safety','Solution architect — health/human services','Infrastructure/cloud architect','Data/integration architect'],advisory:['Security/privacy representative','Application delivery leads','Business analyst / PM'],triggers:['New enterprise system or major replacement','Significant integration or data exchange','Cloud, SaaS, or infrastructure change','Enterprise platform impact (SSO, AD, network)'],outcomes:['Approve (meets standards)','Approve with conditions','Exception required (ITSC notified)','Reject (fundamental architectural problem)'],doesNot:['Approve business cases or funding','Assess security/privacy risk','Override PPRC priority decisions','Manage project delivery tasks'],esc:[['Solution violates mandatory enterprise standards','CIO notified. Exception requires ITSC review.'],['Cross-department dependency not in original scope','PPRC and ITSC notified. Impact assessment required.'],['Decision cannot be reached in one meeting','Deferred with specific information request documented.']]},
+  SPRC:{full:'Security, Privacy &amp; Risk Committee',q:'Are the security, privacy, and vendor risks acceptable and managed?',sla:'10 business days',chair:'CISO',quorum:'Chair or delegate + Privacy officer + at least 50% of voting seats',voting:['CISO (chair)','Privacy officer','Information security analyst/lead','Compliance/legal representative','IT operations security lead','Rotating dept. representative'],advisory:['Enterprise architecture (ASC liaison)','Procurement/vendor management','Human resources (employee data)','External legal counsel (as needed)'],triggers:['PII, HIPAA, CJIS, PCI, or sensitive data','External vendor hosting or data access','New or increased security/privacy risk','Changes to cybersecurity posture or remote access'],outcomes:['Approve (risks acceptable)','Approve with conditions','Risk acceptance required (routes to ITSC)','Defer (assessment incomplete)','Reject (unacceptable risk)'],doesNot:['Make business case decisions','Approve architecture or standards','Authorize project funding','Formally accept risk — ITSC authority only'],esc:[['Residual risk is High or Critical','RC-GOV-010 required. ITSC must accept.'],['Vendor fails security questionnaire','CIO and PPRC notified. Project halted.'],['Active security incident during review','CISO leads incident response. Review paused.']]},
+  ITSC:{full:'IT Steering Committee',q:'Should the County commit resources, authorize funding, and formally accept residual risk?',sla:'15 business days',chair:'CIO',quorum:'Chair + County manager or deputy + Finance director + at least 50% of voting seats',voting:['CIO (chair)','County manager or deputy','Department directors — rotating (2–3 seats)','Finance director or deputy','County attorney (advisory/voting as needed)'],advisory:['PPRC chair','CISO','Enterprise architect','Communications/change management'],triggers:['Cost above $100K or multi-year funding needed','Enterprise-wide or statutory service impact','Formal risk acceptance required','IT Portfolio Fund gate decision','Cross-department priority conflict'],outcomes:['Approve (enterprise commitment made)','Approve with conditions','Defer (insufficient information)','Reject (not aligned to strategy)','Escalate to County manager or County Board'],doesNot:['Design technical solutions (ASC)','Assess security/architecture risk (ASC/SPRC)','Set department priorities (departments)','Manage project delivery tasks (PPRC)'],esc:[['Scope or budget exceeds authorized by more than 20%','ITSC emergency session required.'],['Cross-department conflict unresolved at PPRC','ITSC makes binding priority decision.'],['Critical risk acceptance','County manager formally notified. May require County Board action.']]}
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   STATE
-══════════════════════════════════════════════════════════════════════ */
-var STATE={
-  section:'dashboard',
-  tStep:0, tAnswers:[], tResult:null,
-  comm:'PPRC',
-  docPhase:0, docSearch:'',
-};
+const S={sec:'dashboard',tStep:0,tAns:[],tRes:null,comm:'PPRC',dPh:0,dSrch:'',pathSize:'small'};
+const NAV=[{id:'dashboard',l:'Dashboard',i:'◈'},{id:'triage',l:'Triage wizard',i:'◎'},{id:'docs',l:'Document library',i:'▤'},{id:'flow',l:'Process flow',i:'⇢'},{id:'committees',l:'Committee hub',i:'◉'},{id:'sla',l:'SLA standards',i:'◇'},{id:'path',l:'Governance paths',i:'⬡'}];
 
-/* ══════════════════════════════════════════════════════════════════════
-   NAVIGATION
-══════════════════════════════════════════════════════════════════════ */
-function go(sec){
-  STATE.section=sec;
-  renderMain();
-  buildNav();
-}
-
+function go(s){S.sec=s;render();buildNav();}
 function buildNav(){
-  var items=[
-    {id:'dashboard', label:'Dashboard',    ico:'&#9672;'},
-    {id:'triage',    label:'Triage wizard', ico:'&#9678;'},
-    {id:'docs',      label:'Document library',ico:'&#9636;'},
-    {id:'flow',      label:'Process flow',  ico:'&#8674;'},
-    {id:'committees',label:'Committee hub', ico:'&#9673;'},
-    {id:'sla',       label:'SLA standards', ico:'&#9719;'},
-  ];
-  document.getElementById('navItems').innerHTML=items.map(function(i){
-    return '<button class="ni'+(STATE.section===i.id?' on':'')+'" onclick="go(\''+i.id+'\')">'
-      +'<span class="ico">'+i.ico+'</span>'+i.label+'</button>';
-  }).join('');
+  document.getElementById('nv').innerHTML=NAV.map(i=>`<button class=&quot;ni${S.sec===i.id?' on':''}&quot; onclick=&quot;go('${i.id}')&quot;>${i.i} ${i.l}</button>`).join('');
+}
+function render(){
+  const fns={dashboard:dash,triage:triage,docs:docs,flow:flow,committees:comm,sla:sla,path:pathView};
+  document.getElementById('mn').innerHTML=(fns[S.sec]||dash)();
+  const si=document.querySelector('input[type=search]');
+  if(si)si.addEventListener('input',function(){S.dSrch=this.value;render();});
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   RENDER DISPATCH
-══════════════════════════════════════════════════════════════════════ */
-function renderMain(){
-  var map={dashboard:renderDash,triage:renderTriage,docs:renderDocs,
-           flow:renderFlow,committees:renderComm,sla:renderSLA};
-  document.getElementById('main').innerHTML=(map[STATE.section]||renderDash)();
-  // Re-bind search input after DOM replace
-  var si=document.querySelector('input[type=search]');
-  if(si) si.addEventListener('input',function(){STATE.docSearch=this.value;renderMain();});
+// ── DASHBOARD ──────────────────────────────────────────────────────────────
+function dash(){
+  const metrics=[{l:'Framework documents',v:'21',s:'8 phases · all committees',c:'#185FA5'},{l:'Governance committees',v:'4',s:'PPRC · ASC · SPRC · ITSC',c:'#0F6E56'},{l:'ITPF stage gates',v:'3',s:'Gate 0 · Gate 1 · Gate 2',c:'#854F0B'},{l:'PPRC SLA target',v:'5 days',s:'From complete submission',c:'#534AB7'},{l:'Framework version',v:'2025-01',s:'Incl. Amendment RC-GOV-018',c:'#3B6D11'}];
+  const paths=[{l:'Not sure if governance applies',s:'Answer 6 questions to find your path in under 2 minutes',sec:'triage',c:'#0C447C',bg:'#E6F1FB'},{l:'Small project (under $50K)',s:'See the exact step-by-step governance path for small projects',sec:'path',ps:'small',c:'#085041',bg:'#E1F5EE'},{l:'Medium project ($50K–$100K)',s:'See the exact step-by-step governance path for medium projects',sec:'path',ps:'medium',c:'#633806',bg:'#FAEEDA'},{l:'Large project (over $100K or enterprise)',s:'See the exact step-by-step governance path for large projects',sec:'path',ps:'large',c:'#791F1F',bg:'#FCEBEB'}];
+  const cycle=[{q:'Q2 (Apr–Jun)',t:'Business roadmap development',o:'Departments &amp; executive leadership',c:'#185FA5'},{q:'Q3 (Jul–Aug)',t:'Technology impact assessment',o:'CIO + PPRC',c:'#0F6E56'},{q:'Q4 (Sep–Oct)',t:'Portfolio shaping &amp; budget alignment',o:'IT Steering Committee',c:'#854F0B'},{q:'Q1 (Jan–Feb)',t:'Formal intake &amp; execution planning',o:'PPRC + departments',c:'#534AB7'}];
+  const slas=['PPRC','ASC','SPRC','ITSC'].map(n=>({n,sla:CM[n].sla,d:n==='PPRC'?'Triage &amp; classification':n==='ASC'?'Architecture review':n==='SPRC'?'Security &amp; privacy review':'Enterprise priority &amp; funding',c:CC[n]}));
+  return `<div style=&quot;margin-bottom:14px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>IT Governance Portal</div><div style=&quot;font-size:12px;color:#888&quot;>Ramsey County Information Technology — Framework 2025</div></div>
+<div style=&quot;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px&quot;>${metrics.map(m=>`<div class=&quot;metric&quot; style=&quot;border-left-color:${m.c}&quot;><div style=&quot;font-size:17px;font-weight:700;color:${m.c}&quot;>${m.v}</div><div style=&quot;font-size:11px;font-weight:600;color:#333;margin-top:2px&quot;>${m.l}</div><div style=&quot;font-size:10px;color:#888;margin-top:1px&quot;>${m.s}</div></div>`).join('')}</div>
+<div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px&quot;>
+<div class=&quot;card&quot;><div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>Quick start — which path is yours?</div>${paths.map(p=>`<button onclick=&quot;goPath('${p.sec}','${p.ps||p.sec}')&quot; style=&quot;width:100%;display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:6px;border:none;background:${p.bg};cursor:pointer;text-align:left;margin-bottom:6px&quot;><div><div style=&quot;font-size:12px;font-weight:600;color:${p.c}&quot;>${p.l}</div><div style=&quot;font-size:11px;color:#666;margin-top:1px&quot;>${p.s}</div></div><span style=&quot;color:${p.c}&quot;>&amp;#8594;</span></button>`).join('')}</div>
+<div class=&quot;card&quot;><div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>Annual governance cycle</div>${cycle.map(q=>`<div style=&quot;display:flex;gap:10px;align-items:flex-start;margin-bottom:10px&quot;><div style=&quot;width:6px;height:6px;border-radius:50%;background:${q.c};margin-top:5px;flex-shrink:0&quot;></div><div><div style=&quot;font-size:10px;font-weight:600;color:${q.c};font-family:'Courier New',monospace&quot;>${q.q}</div><div style=&quot;font-size:12px;font-weight:600;color:#1a1a1a&quot;>${q.t}</div><div style=&quot;font-size:11px;color:#888&quot;>Owned by: ${q.o}</div></div></div>`).join('')}</div>
+</div>
+<div class=&quot;card&quot;><div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>Governance SLA commitments</div><div style=&quot;display:grid;grid-template-columns:repeat(4,1fr);gap:8px&quot;>${slas.map(s=>`<div style=&quot;background:${s.c.bg};border-radius:6px;padding:12px;border:1px solid ${s.c.bd}40&quot;><div style=&quot;font-size:20px;font-weight:700;color:${s.c.tx}&quot;>${s.sla}</div><div style=&quot;font-size:12px;font-weight:600;color:${s.c.tx};margin-top:2px&quot;>${s.n}</div><div style=&quot;font-size:11px;color:#555;margin-top:4px&quot;>${s.d}</div></div>`).join('')}</div></div>`;
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   SECTION: DASHBOARD
-══════════════════════════════════════════════════════════════════════ */
-function renderDash(){
-  var metrics=[
-    {label:'Framework documents',val:'21',  sub:'8 phases · all committees',  c:'#185FA5'},
-    {label:'Governance committees',val:'4',  sub:'PPRC · ASC · SPRC · ITSC',  c:'#0F6E56'},
-    {label:'ITPF stage gates',    val:'3',  sub:'Gate 0 · Gate 1 · Gate 2',   c:'#854F0B'},
-    {label:'PPRC SLA target',     val:'5 days',sub:'From complete submission', c:'#534AB7'},
-    {label:'Framework version',   val:'2025-01',sub:'Incl. Amendment RC-GOV-018',c:'#3B6D11'},
-  ];
-  var paths=[
-    {label:'Not sure if governance applies',    sub:'Use the pre-intake triage tool first',                           sec:'triage',     c:'#0C447C',bg:'#E6F1FB'},
-    {label:'Small project (under $50K)',         sub:'RC-GOV-004 triage + RC-GOV-006 intake + PPRC only',             sec:'docs',       c:'#085041',bg:'#E1F5EE'},
-    {label:'Medium project ($50K – $100K)',      sub:'Full intake + PPRC routing + ASC/SPRC as triggered',            sec:'flow',       c:'#633806',bg:'#FAEEDA'},
-    {label:'Large project (over $100K or enterprise)',sub:'Full path — all four committees — ITSC approval required', sec:'committees', c:'#791F1F',bg:'#FCEBEB'},
-  ];
-  var cycle=[
-    {q:'Q2 (Apr–Jun)', title:'Business roadmap development',         own:'Departments & executive leadership',c:'#185FA5'},
-    {q:'Q3 (Jul–Aug)', title:'Technology impact assessment',         own:'CIO + PPRC',                        c:'#0F6E56'},
-    {q:'Q4 (Sep–Oct)', title:'Portfolio shaping & budget alignment', own:'IT Steering Committee (ITSC)',       c:'#854F0B'},
-    {q:'Q1 (Jan–Feb)', title:'Formal intake & execution planning',   own:'PPRC + departments',                c:'#534AB7'},
-  ];
-  var slas=[
-    {name:'PPRC',sla:'5 days', desc:'Triage & classification decision',   c:CC.PPRC},
-    {name:'ASC', sla:'10 days',desc:'Solution architecture review',        c:CC.ASC},
-    {name:'SPRC',sla:'10 days',desc:'Security & privacy review',           c:CC.SPRC},
-    {name:'ITSC',sla:'15 days',desc:'Enterprise priority & funding',       c:CC.ITSC},
-  ];
-
-  return '<div style="margin-bottom:14px">'
-    +'<div style="font-size:17px;font-weight:600;color:#1a1a1a;margin-bottom:3px">IT Governance Portal</div>'
-    +'<div style="font-size:12px;color:#888">Ramsey County Information Technology — Framework 2025</div>'
-    +'</div>'
-
-    +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px">'
-    +metrics.map(function(m){return '<div class="metric" style="border-left-color:'+m.c+'">'
-      +'<div style="font-size:18px;font-weight:600;color:'+m.c+';line-height:1.1">'+m.val+'</div>'
-      +'<div style="font-size:11px;font-weight:600;color:#333;margin-top:3px">'+m.label+'</div>'
-      +'<div style="font-size:10px;color:#888;margin-top:2px">'+m.sub+'</div>'
-      +'</div>';}).join('')
-    +'</div>'
-
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">'
-    +'<div class="card">'
-    +'<div style="font-size:13px;font-weight:600;margin-bottom:10px">Quick start — which path is yours?</div>'
-    +paths.map(function(p){return '<button onclick="go(\''+p.sec+'\')" style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:6px;border:none;background:'+p.bg+';cursor:pointer;text-align:left;margin-bottom:6px">'
-      +'<div><div style="font-size:12px;font-weight:600;color:'+p.c+'">'+p.label+'</div>'
-      +'<div style="font-size:11px;color:#666;margin-top:1px">'+p.sub+'</div></div>'
-      +'<span style="color:'+p.c+';font-size:14px">&rarr;</span>'
-      +'</button>';}).join('')
-    +'</div>'
-
-    +'<div class="card">'
-    +'<div style="font-size:13px;font-weight:600;margin-bottom:10px">Annual governance cycle</div>'
-    +cycle.map(function(q){return '<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">'
-      +'<div style="width:6px;height:6px;border-radius:50%;background:'+q.c+';margin-top:5px;flex-shrink:0"></div>'
-      +'<div><div style="font-size:10px;font-weight:600;color:'+q.c+';font-family:\'Courier New\',monospace">'+q.q+'</div>'
-      +'<div style="font-size:12px;font-weight:600;color:#1a1a1a">'+q.title+'</div>'
-      +'<div style="font-size:11px;color:#888">Owned by: '+q.own+'</div>'
-      +'</div></div>';}).join('')
-    +'</div></div>'
-
-    +'<div class="card">'
-    +'<div style="font-size:13px;font-weight:600;margin-bottom:10px">Governance SLA commitments</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'
-    +slas.map(function(s){return '<div style="background:'+s.c.bg+';border-radius:6px;padding:12px;border:1px solid '+s.c.bd+'40">'
-      +'<div style="font-size:20px;font-weight:700;color:'+s.c.tx+'">'+s.sla+'</div>'
-      +'<div style="font-size:12px;font-weight:600;color:'+s.c.tx+';margin-top:2px">'+s.name+'</div>'
-      +'<div style="font-size:11px;color:#555;margin-top:4px">'+s.desc+'</div>'
-      +'</div>';}).join('')
-    +'</div></div>';
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   SECTION: TRIAGE WIZARD
-══════════════════════════════════════════════════════════════════════ */
-function renderTriage(){
-  if(STATE.tResult){
-    var r=STATE.tResult;
-    return '<div style="max-width:580px">'
-      +'<div style="margin-bottom:14px">'
-      +'<div style="font-size:17px;font-weight:600;margin-bottom:3px">Pre-intake triage wizard</div>'
-      +'<div style="font-size:12px;color:#888">Governance path determined from your answers.</div>'
-      +'</div>'
-      +'<div style="background:'+r.bg+';border:1px solid '+r.bd+';border-radius:8px;padding:20px;margin-bottom:12px">'
-      +'<div style="font-size:10px;font-weight:700;color:'+r.tx+';letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px">Governance path determined</div>'
-      +'<div style="font-size:22px;font-weight:700;color:'+r.tx+';margin-bottom:8px">'+r.path+'</div>'
-      +'<div style="font-size:13px;color:#333;line-height:1.6;margin-bottom:14px">'+r.desc+'</div>'
-      +(r.comms.length?'<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Required committees</div>'
-        +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
-        +r.comms.map(function(c){return '<span style="padding:3px 12px;border-radius:100px;font-size:12px;font-weight:700;background:'+CC[c].bd+';color:#fff">'+c+'</span>';}).join('')
-        +'</div></div>':'')
-      +(r.sla?'<div style="font-size:12px;color:#555"><span style="font-weight:600;color:#333">Expected timeline:</span> '+r.sla+'</div>':'')
-      +'</div>'
-      +(r.next?'<div class="card" style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Next step</div><div style="font-size:13px;color:#1a1a1a">&rarr; '+r.next+'</div></div>':'')
-      +'<div style="margin-bottom:14px">'
-      +'<div style="font-size:11px;font-weight:600;color:#888;margin-bottom:8px">Your answers</div>'
-      +STATE.tAnswers.map(function(a,i){return '<div style="display:flex;gap:8px;align-items:center;padding:5px 8px;border-radius:6px;background:'+(a==='yes'?'#E6F1FB':'#f5f5f5')+';margin-bottom:4px">'
-        +'<span style="font-family:\'Courier New\',monospace;font-size:10px;color:#888;min-width:20px">Q'+(i+1)+'</span>'
-        +'<span style="font-size:12px;color:#333;flex:1">'+(TQ[i]?TQ[i].q:'')+'</span>'
-        +'<span style="font-size:11px;font-weight:700;color:'+(a==='yes'?'#185FA5':'#888')+'">'+a.toUpperCase()+'</span>'
-        +'</div>';}).join('')
-      +'</div>'
-      +'<button onclick="resetTriage()" style="padding:8px 18px;background:#fff;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:\'Segoe UI\',sans-serif;color:#333">&circlearrowleft; Start over</button>'
-      +'</div>';
+// ── TRIAGE ─────────────────────────────────────────────────────────────────
+function triage(){
+  if(S.tRes){
+    const r=S.tRes;
+    return `<div style=&quot;max-width:560px&quot;><div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Pre-intake triage wizard</div><div style=&quot;font-size:12px;color:#888&quot;>Governance path determined from your answers.</div></div>
+<div style=&quot;background:${r.bg};border:1px solid ${r.bd};border-radius:8px;padding:20px;margin-bottom:12px&quot;><div style=&quot;font-size:10px;font-weight:700;color:${r.tx};letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px&quot;>Governance path determined</div><div style=&quot;font-size:21px;font-weight:700;color:${r.tx};margin-bottom:8px&quot;>${r.path}</div><div style=&quot;font-size:13px;color:#333;line-height:1.6;margin-bottom:12px&quot;>${r.desc}</div>${r.comms.length?`<div style=&quot;margin-bottom:10px&quot;><div style=&quot;font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px&quot;>Required committees</div><div style=&quot;display:flex;gap:6px&quot;>${r.comms.map(c=>`<span style=&quot;padding:3px 12px;border-radius:100px;font-size:12px;font-weight:700;background:${CC[c].bd};color:#fff&quot;>${c}</span>`).join('')}</div></div>`:''}<div style=&quot;font-size:12px;color:#555&quot;><span style=&quot;font-weight:600;color:#333&quot;>Expected timeline:</span> ${r.sla||'Operational — no governance needed'}</div></div>
+${r.next?`<div class=&quot;card&quot; style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px&quot;>Next step</div><div style=&quot;font-size:13px;color:#1a1a1a&quot;>&amp;#8594; ${r.next}</div></div>`:''}
+<div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:11px;font-weight:600;color:#888;margin-bottom:6px&quot;>Your answers</div>${S.tAns.map((a,i)=>`<div style=&quot;display:flex;gap:8px;align-items:center;padding:5px 8px;border-radius:6px;background:${a==='yes'?'#E6F1FB':'#f5f5f5'};margin-bottom:3px&quot;><span style=&quot;font-family:'Courier New',monospace;font-size:10px;color:#888;min-width:20px&quot;>Q${i+1}</span><span style=&quot;font-size:12px;color:#333;flex:1&quot;>${TQ[i]?TQ[i].q:''}</span><span style=&quot;font-size:11px;font-weight:700;color:${a==='yes'?'#185FA5':'#888'}&quot;>${a.toUpperCase()}</span></div>`).join('')}</div>
+<button onclick=&quot;resetT()&quot; style=&quot;padding:8px 18px;background:#fff;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Segoe UI',sans-serif;color:#333&quot;>&amp;#8634; Start over</button></div>`;
   }
+  const q=TQ[S.tStep];
+  const pct=Math.round((S.tStep/TQ.length)*100);
+  return `<div style=&quot;max-width:560px&quot;><div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Pre-intake triage wizard</div><div style=&quot;font-size:12px;color:#888&quot;>Answer 6 questions to find your governance path.</div></div>
+<div class=&quot;card&quot; style=&quot;margin-bottom:10px&quot;><div style=&quot;display:flex;justify-content:space-between;align-items:center;margin-bottom:7px&quot;><span style=&quot;font-size:12px;font-weight:600&quot;>Question ${S.tStep+1} of ${TQ.length}</span><span style=&quot;font-size:11px;color:#888;font-family:'Courier New',monospace&quot;>${pct}%</span></div><div style=&quot;background:#e8e8e8;border-radius:100px;height:4px&quot;><div style=&quot;background:#185FA5;height:4px;border-radius:100px;width:${pct}%&quot;></div></div></div>
+<div class=&quot;card&quot; style=&quot;margin-bottom:10px&quot;><div style=&quot;background:#E6F1FB;display:inline-flex;padding:2px 8px;border-radius:4px;font-family:'Courier New',monospace;font-size:11px;font-weight:700;color:#0C447C;margin-bottom:10px&quot;>Q${S.tStep+1}</div><div style=&quot;font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:8px;line-height:1.45&quot;>${q.q}</div><div style=&quot;font-size:12px;color:#666;padding:8px 12px;background:#f8f9fa;border-left:2px solid #d0d0d0;margin-bottom:14px&quot;>Hint: ${q.h}</div><div style=&quot;display:flex;gap:10px&quot;><button class=&quot;tqbtn&quot; onclick=&quot;tAns('yes')&quot; style=&quot;background:#E6F1FB;color:#0C447C;border-color:#185FA5&quot;>Yes — governance likely applies</button><button class=&quot;tqbtn&quot; onclick=&quot;tAns('no')&quot; style=&quot;background:#f8f9fa;color:#666&quot;>No — this does not apply</button></div></div>
+${S.tAns.length?`<div class=&quot;card&quot; style=&quot;background:#f8f9fa&quot;><div style=&quot;font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px&quot;>Answers so far</div>${S.tAns.map((a,i)=>`<div style=&quot;display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #e8e8e8;align-items:center;font-size:12px&quot;><span style=&quot;font-family:'Courier New',monospace;font-size:10px;color:#888;width:22px&quot;>Q${i+1}</span><span style=&quot;flex:1;color:#333&quot;>${TQ[i].q}</span><span style=&quot;font-weight:700;color:${a==='yes'?'#185FA5':'#888'}&quot;>${a}</span></div>`).join('')}</div>`:''}
+</div>`;
+}
+function tAns(a){
+  S.tAns.push(a);
+  if(S.tAns[0]==='no'){S.tRes={path:'Not in scope',desc:'This appears to be a non-technology business process request. IT governance does not apply. Log through the IT Service Desk.',comms:[],sla:null,next:null,bg:'#f5f6f7',bd:'#d0d0d0',tx:'#555'};}
+  else if(S.tAns.length===TQ.length){
+    const comms=['PPRC'];
+    if(S.tAns[2]==='yes'||S.tAns[3]==='yes')comms.push('SPRC');
+    if(S.tAns[4]==='yes')comms.push('ASC');
+    if(S.tAns[5]==='yes')comms.push('ITSC');
+    if(S.tAns[5]==='yes')S.tRes={path:'Large project — full governance path',desc:'All four committees must review. ITSC is the final decision authority. Contact the Governance Coordinator immediately.',comms,sla:'25–35 business days (full path)',next:'Contact the Governance Coordinator. Complete RC-GOV-006 intake form.',bg:'#FCEBEB',bd:'#A32D2D',tx:'#791F1F'};
+    else if(S.tAns[1]==='yes'||comms.length>1)S.tRes={path:'Medium project',desc:'PPRC will classify and route to the triggered committees. Complete the full intake form.',comms,sla:'15–25 business days (triggered committees)',next:'Complete RC-GOV-006 Intake Form. Submit to the Governance Coordinator.',bg:'#FAEEDA',bd:'#854F0B',tx:'#633806'};
+    else S.tRes={path:'Small project',desc:'PPRC reviews within 5 business days of a complete intake package.',comms,sla:'5 business days (PPRC only)',next:'Complete RC-GOV-004 Triage Tool, then RC-GOV-006 Intake Form.',bg:'#E6F1FB',bd:'#185FA5',tx:'#0C447C'};
+  }else{S.tStep++;}
+  render();
+}
+function resetT(){S.tStep=0;S.tAns=[];S.tRes=null;render();}
 
-  var q=TQ[STATE.tStep];
-  var pct=Math.round((STATE.tStep/TQ.length)*100);
-  return '<div style="max-width:580px">'
-    +'<div style="margin-bottom:14px">'
-    +'<div style="font-size:17px;font-weight:600;margin-bottom:3px">Pre-intake triage wizard</div>'
-    +'<div style="font-size:12px;color:#888">Answer 6 questions to find your governance path — takes under 2 minutes.</div>'
-    +'</div>'
-    +'<div class="card" style="margin-bottom:10px">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
-    +'<span style="font-size:12px;font-weight:600;color:#1a1a1a">Question '+(STATE.tStep+1)+' of '+TQ.length+'</span>'
-    +'<span style="font-size:11px;color:#888;font-family:\'Courier New\',monospace">'+pct+'%</span>'
-    +'</div>'
-    +'<div style="background:#ebebeb;border-radius:100px;height:4px">'
-    +'<div style="background:#185FA5;height:4px;border-radius:100px;width:'+pct+'%"></div>'
-    +'</div></div>'
-    +'<div class="card" style="margin-bottom:10px">'
-    +'<div style="display:inline-flex;background:#E6F1FB;padding:2px 8px;border-radius:6px;font-family:\'Courier New\',monospace;font-size:11px;font-weight:700;color:#0C447C;margin-bottom:12px">Q'+(STATE.tStep+1)+'</div>'
-    +'<div style="font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:10px;line-height:1.45">'+q.q+'</div>'
-    +'<div style="font-size:12px;color:#666;padding:8px 12px;background:#f8f9fa;border-left:2px solid #d0d0d0;margin-bottom:16px">Hint: '+q.hint+'</div>'
-    +'<div style="display:flex;gap:10px">'
-    +'<button class="tqbtn" onclick="triageAnswer(\'yes\')" style="background:#E6F1FB;color:#0C447C;border-color:#185FA5">Yes — governance likely applies</button>'
-    +'<button class="tqbtn" onclick="triageAnswer(\'no\')" style="background:#f8f9fa;color:#666">No — this does not apply</button>'
-    +'</div></div>'
-    +(STATE.tAnswers.length?'<div class="card" style="background:#f8f9fa">'
-      +'<div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Answers so far</div>'
-      +STATE.tAnswers.map(function(a,i){return '<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #e8e8e8;align-items:center;font-size:12px">'
-        +'<span style="font-family:\'Courier New\',monospace;font-size:10px;color:#888;width:22px">Q'+(i+1)+'</span>'
-        +'<span style="flex:1;color:#333">'+(TQ[i].q)+'</span>'
-        +'<span style="font-weight:700;color:'+(a==='yes'?'#185FA5':'#888')+'">'+a+'</span>'
-        +'</div>';}).join('')
-      +'</div>':'')
-    +'</div>';
+// ── DOCS ───────────────────────────────────────────────────────────────────
+function docs(){
+  const fil=DOCS.filter(d=>(S.dPh===0||d.ph===S.dPh)&amp;&amp;(!S.dSrch||d.t.toLowerCase().includes(S.dSrch.toLowerCase())||d.d.toLowerCase().includes(S.dSrch.toLowerCase())));
+  const grp=PHASES.map(p=>({...p,docs:fil.filter(d=>d.ph===p.n)})).filter(p=>p.docs.length);
+  return `<div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Document library</div><div style=&quot;font-size:12px;color:#888&quot;>All 21 RC-GOV framework documents organized by governance phase.</div></div>
+<div style=&quot;display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap&quot;><input type=&quot;search&quot; placeholder=&quot;Search documents...&quot; value=&quot;${S.dSrch}&quot; style=&quot;max-width:200px&quot;><button class=&quot;fbtn${S.dPh===0?' on':''}&quot; onclick=&quot;S.dPh=0;render()&quot;>All</button>${PHASES.map(p=>`<button class=&quot;fbtn${S.dPh===p.n?' on':''}&quot; onclick=&quot;S.dPh=${p.n};render()&quot; style=&quot;${S.dPh===p.n?`background:${PC[p.n].bg};color:${PC[p.n].tx};border-color:${PC[p.n].bd}`:''}&quot;>P${p.n}</button>`).join('')}</div>
+${grp.map(ph=>`<div style=&quot;margin-bottom:18px&quot;><div style=&quot;display:flex;align-items:center;gap:8px;margin-bottom:8px&quot;><div style=&quot;width:22px;height:22px;border-radius:4px;background:${PC[ph.n].bd};display:flex;align-items:center;justify-content:center&quot;><span style=&quot;font-size:11px;font-weight:700;color:#fff&quot;>${ph.n}</span></div><span style=&quot;font-size:13px;font-weight:600&quot;>Phase ${ph.n} — ${ph.l}</span><span style=&quot;font-size:11px;color:#888&quot;>(${ph.docs.length} doc${ph.docs.length!==1?'s':''})</span></div><div style=&quot;display:grid;grid-template-columns:repeat(3,1fr);gap:8px&quot;>${ph.docs.map(d=>`<div class=&quot;dcard&quot;><div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px&quot;><span style=&quot;font-family:'Courier New',monospace;font-size:10px;font-weight:700;color:${PC[d.ph].tx};background:${PC[d.ph].bg};padding:2px 6px;border-radius:3px&quot;>RC-GOV-${d.id}</span><span class=&quot;chip&quot; style=&quot;background:${TC[d.ty].bg};color:${TC[d.ty].tx}&quot;>${d.ty}</span></div><div style=&quot;font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:4px;line-height:1.3&quot;>${d.t}</div><div style=&quot;font-size:11px;color:#666;line-height:1.5&quot;>${d.d}</div></div>`).join('')}</div></div>`).join('')}
+${!grp.length?`<div style=&quot;padding:32px;text-align:center;color:#888;font-size:13px&quot;>No documents match. <button onclick=&quot;S.dSrch='';S.dPh=0;render()&quot; style=&quot;background:none;border:none;color:#185FA5;cursor:pointer;font-family:'Segoe UI',sans-serif;font-size:13px&quot;>Clear filters</button></div>`:''}`;
 }
 
-function triageAnswer(ans){
-  STATE.tAnswers.push(ans);
-  if(STATE.tAnswers[0]==='no'){
-    STATE.tResult={path:'Not in scope — no governance required',desc:'This appears to be a non-technology business process request. IT governance does not apply. Confirm with your department head and log through the standard IT Service Desk.',comms:[],bg:'#f5f6f7',bd:'#d0d0d0',tx:'#555'};
-  } else if(STATE.tAnswers.length===TQ.length){
-    var a=STATE.tAnswers;
-    var comms=['PPRC'];
-    if(a[2]==='yes'||a[3]==='yes') comms.push('SPRC');
-    if(a[4]==='yes') comms.push('ASC');
-    if(a[5]==='yes') comms.push('ITSC');
-    var isLarge=a[5]==='yes';
-    var isMed=!isLarge&&(a[1]==='yes'||comms.length>1);
-    if(isLarge){
-      STATE.tResult={path:'Large project — full governance path',desc:'All four committees must review. ITSC is the final decision authority. Contact the Governance Coordinator immediately to begin scheduling.',comms:comms,sla:'25–35 business days (full path)',next:'Contact the Governance Coordinator. Complete RC-GOV-006 intake form. PPRC scheduling begins immediately.',bg:'#FCEBEB',bd:'#A32D2D',tx:'#791F1F'};
-    } else if(isMed){
-      STATE.tResult={path:'Medium project',desc:'PPRC will classify and route to the triggered committees. Complete the full intake form and PPRC will confirm routing via the 7-question decision tree.',comms:comms,sla:'15–25 business days (triggered committees)',next:'Complete RC-GOV-006 Intake Form. Submit to the Governance Coordinator.',bg:'#FAEEDA',bd:'#854F0B',tx:'#633806'};
-    } else {
-      STATE.tResult={path:'Small project',desc:'PPRC reviews within 5 business days of a complete intake package. Minimal documentation required at this classification level.',comms:comms,sla:'5 business days (PPRC only)',next:'Complete RC-GOV-004 Triage Tool, then RC-GOV-006 Intake Form. Submit to the Governance Coordinator.',bg:'#E6F1FB',bd:'#185FA5',tx:'#0C447C'};
-    }
-  } else {
-    STATE.tStep++;
+// ── FLOW ───────────────────────────────────────────────────────────────────
+function flow(){
+  const rows=[
+    [{c:CC.PPRC,t:'1. Intake &amp; classification',s:['Pre-triage (RC-GOV-004)','Intake form (RC-GOV-006)','Classify size','Confirm completeness']},{ph:'Awaiting PPRC routing'},{ph:'Awaiting PPRC routing'},{ph:'Awaiting committee outputs'}],
+    [{c:CC.PPRC,t:'2. Portfolio fit &amp; routing',s:['Alignment check','Capacity assessment','7Q routing decision tree','Record in RC-GOV-006 §5']},{c:CC.ASC,t:'If triggered: architecture',s:['Solution vs. standards','Cloud, integration &amp; data','Approve / conditions / exception','Log in RC-GOV-015']},{c:CC.SPRC,t:'If triggered: security &amp; privacy',s:['Data classification','Vendor risk questionnaire','Risk treatment recommendation','Risk acceptance memo if needed']},{c:CC.ITSC,t:'Large projects: executive decision',s:['Portfolio trade-off review','All prior committee outputs','ITPF funding gate decision','Risk acceptance vote']}],
+    [{c:CC.PPRC,t:'3. Portfolio monitoring (ongoing)',s:['Monthly health reporting','Gate 1 readiness','Escalation tracking','Quarterly dashboard (RC-GOV-017)']},{c:CC.ASC,t:'As needed: design changes',s:['Major changes reviewed','Exceptions documented','Technical debt recorded']},{c:CC.SPRC,t:'As needed: risk monitoring',s:['Security incidents','Vendor risk updates','Annual risk acceptance review']},{c:CC.ITSC,t:'As needed: major changes',s:['Scope/budget changes >20%','Portfolio re-prioritization','Additional ITPF gate decisions']}],
+  ];
+  const paths=[{s:'Operational',p:'IT Service Desk → standard change management. No committee review.',c:'#555',bg:'#f5f6f7'},{s:'Small (<$50K)',p:'RC-GOV-004 triage → RC-GOV-006 intake → PPRC (5 days) → approved or routed.',c:CC.PPRC.tx,bg:CC.PPRC.bg},{s:'Medium ($50K–$100K)',p:'RC-GOV-006 → PPRC (5 days, routing) → ASC (10 days, if triggered) → SPRC (10 days, if triggered) → approved.',c:CC.ASC.tx,bg:CC.ASC.bg},{s:'Large (>$100K)',p:'RC-GOV-006 → PPRC → ASC (required) → SPRC (required) → ITSC (15 days) → authorized.',c:CC.SPRC.tx,bg:CC.SPRC.bg}];
+  const lanes=['PPRC','ASC','SPRC','ITSC'];
+  return `<div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Process flow</div><div style=&quot;font-size:12px;color:#888&quot;>End-to-end journey from intake through Gate 2 closeout.</div></div>
+<div style=&quot;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px&quot;>${lanes.map(n=>`<div style=&quot;background:${CC[n].bd};border-radius:6px;padding:10px 12px;text-align:center&quot;><div style=&quot;font-size:13px;font-weight:700;color:#fff&quot;>${n}</div><div style=&quot;font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px&quot;>${CM[n].full}</div></div>`).join('')}</div>
+${rows.map(row=>`<div style=&quot;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px&quot;>${row.map(cell=>cell.c?`<div style=&quot;background:${cell.c.bg};border-left:2px solid ${cell.c.bd};padding:10px 12px&quot;><div style=&quot;font-size:11px;font-weight:600;color:${cell.c.tx};margin-bottom:5px&quot;>${cell.t}</div>${cell.s.map(s=>`<div style=&quot;font-size:10px;color:#333;display:flex;gap:4px;margin-bottom:2px&quot;><span style=&quot;color:${cell.c.bd};flex-shrink:0&quot;>&amp;#8594;</span>${s}</div>`).join('')}</div>`:`<div style=&quot;background:#fafafa;border:1px dashed #d0d0d0;border-radius:6px;display:flex;align-items:center;justify-content:center;min-height:80px&quot;><div style=&quot;font-size:11px;color:#aaa;text-align:center;font-style:italic&quot;>${cell.ph}</div></div>`).join('')}</div>`).join('')}
+<div style=&quot;background:#EAF3DE;border-radius:6px;padding:12px 16px;border:1px solid #3B6D11;margin-bottom:12px;display:flex;align-items:center;gap:10px&quot;><span style=&quot;font-size:13px;font-weight:700;color:#27500A&quot;>Gate 2 — closeout &amp;amp; sustainment activation</span><span style=&quot;font-size:11px;color:#555&quot;>Benefits Realization Plan filed &amp;middot; Operations accepts support &amp;middot; ITPF Gate 2 closed &amp;middot; Lessons learned submitted</span></div>
+<div class=&quot;card&quot;><div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>Governance path by project size</div>${paths.map(p=>`<div style=&quot;display:flex;gap:10px;padding:8px 10px;background:${p.bg};border-radius:6px;margin-bottom:5px;align-items:flex-start&quot;><span style=&quot;font-size:12px;font-weight:700;color:${p.c};min-width:145px;flex-shrink:0&quot;>${p.s}</span><span style=&quot;font-size:12px;color:#333;line-height:1.5&quot;>${p.p}</span></div>`).join('')}</div>`;
+}
+
+// ── COMMITTEES ─────────────────────────────────────────────────────────────
+function comm(){
+  const c=CM[S.comm];const col=CC[S.comm];
+  return `<div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Committee hub</div><div style=&quot;font-size:12px;color:#888&quot;>Detailed reference for all four IT governance committees.</div></div>
+<div style=&quot;display:flex;gap:6px;margin-bottom:12px&quot;>${['PPRC','ASC','SPRC','ITSC'].map(n=>`<button class=&quot;ctab&quot; onclick=&quot;S.comm='${n}';render()&quot; style=&quot;${S.comm===n?`background:${CC[n].bg};color:${CC[n].tx};border-color:${CC[n].bd}`:''}&quot;> ${n}</button>`).join('')}</div>
+<div style=&quot;background:${col.bd};border-radius:8px;padding:18px 20px;margin-bottom:12px&quot;><div style=&quot;font-size:20px;font-weight:700;color:#fff;margin-bottom:2px&quot;>${S.comm}</div><div style=&quot;font-size:12px;color:rgba(255,255,255,0.78);margin-bottom:10px&quot;>${c.full}</div><div style=&quot;background:rgba(255,255,255,0.13);border-radius:6px;padding:10px 14px;font-size:13px;color:#fff;font-style:italic;margin-bottom:12px&quot;>&quot;${c.q}&quot;</div><div style=&quot;display:flex;gap:24px&quot;><div><div style=&quot;font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.05em&quot;>SLA target</div><div style=&quot;font-size:16px;font-weight:700;color:#fff&quot;>${c.sla}</div></div><div><div style=&quot;font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.05em&quot;>Chair</div><div style=&quot;font-size:16px;font-weight:700;color:#fff&quot;>${c.chair}</div></div></div></div>
+<div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px&quot;>
+<div class=&quot;card&quot;><div style=&quot;font-size:11px;font-weight:700;color:${col.tx};text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px&quot;>Voting seats</div>${c.voting.map((v,i)=>`<div style=&quot;font-size:12px;color:#1a1a1a;padding:5px 0;border-bottom:${i<c.voting.length-1?'1px solid #eee':'none'}&quot;>${v}</div>`).join('')}<div style=&quot;margin-top:10px;padding-top:10px;border-top:1px solid #eee&quot;><div style=&quot;font-size:10px;font-weight:700;color:#888;margin-bottom:3px&quot;>Quorum requirement</div><div style=&quot;font-size:11px;color:#333;line-height:1.5&quot;>${c.quorum}</div></div></div>
+<div class=&quot;card&quot;><div style=&quot;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px&quot;>Advisory (non-voting)</div>${c.advisory.map((a,i)=>`<div style=&quot;font-size:12px;color:#666;padding:5px 0;border-bottom:${i<c.advisory.length-1?'1px solid #eee':'none'}&quot;>${a}</div>`).join('')}</div>
+</div>
+<div style=&quot;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px&quot;>
+<div class=&quot;card&quot;><div style=&quot;font-size:11px;font-weight:700;color:${col.tx};text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px&quot;>Review triggers</div>${c.triggers.map(t=>`<div style=&quot;display:flex;gap:6px;font-size:12px;color:#1a1a1a;padding:4px 0&quot;><span style=&quot;color:${col.bd};flex-shrink:0&quot;>&amp;#8594;</span>${t}</div>`).join('')}</div>
+<div class=&quot;card&quot;><div style=&quot;font-size:11px;font-weight:700;color:#27500A;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px&quot;>Decision outcomes</div>${c.outcomes.map(o=>`<div style=&quot;display:flex;gap:6px;font-size:12px;color:#1a1a1a;padding:4px 0&quot;><span style=&quot;color:#3B6D11;flex-shrink:0&quot;>&amp;#10003;</span>${o}</div>`).join('')}</div>
+<div class=&quot;card&quot;><div style=&quot;font-size:11px;font-weight:700;color:#791F1F;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px&quot;>Does not</div>${c.doesNot.map(d=>`<div style=&quot;display:flex;gap:6px;font-size:12px;color:#1a1a1a;padding:4px 0&quot;><span style=&quot;color:#A32D2D;flex-shrink:0&quot;>&amp;#10007;</span>${d}</div>`).join('')}</div>
+</div>
+<div class=&quot;card&quot;><div style=&quot;font-size:11px;font-weight:700;color:#633806;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px&quot;>Escalation matrix</div><table><thead><tr><th style=&quot;width:42%&quot;>Escalation trigger</th><th>Required action</th></tr></thead><tbody>${c.esc.map(([t,a],i)=>`<tr style=&quot;background:${i%2===0?'#f8f9fa':'#fff'}&quot;><td style=&quot;font-weight:600;color:#854F0B&quot;>${t}</td><td style=&quot;color:#555&quot;>${a}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+// ── SLA ────────────────────────────────────────────────────────────────────
+function sla(){
+  const rows=[['PPRC — triage','Complete intake received','5 business days','CIO notified if no decision in 7 days','Includes routing determination',CC.PPRC],['ASC — architecture review','Architecture package complete','10 business days','CIO notified if 15 days elapsed','Complex systems may request 5-day extension',CC.ASC],['SPRC — security review','RC-GOV-009 package complete','10 business days','CISO escalation if 15 days elapsed','Critical items: 5-day expedited path',CC.SPRC],['ITSC — executive decision','All prior committee outputs received','15 business days','County manager notified if 25 days elapsed','Meets monthly; expedited sessions available',CC.ITSC],['Conditions resolution','Date set at time of decision','Per condition due date','Escalate to PPRC/ITSC if 15+ days overdue','Cannot advance gate until all conditions closed',{tx:'#633806',bg:'#FAEEDA',bd:'#854F0B'}],['Intake return — incomplete','Incomplete package submitted','2 business days to return with gap list','No escalation — responsibility on requestor','SLA clock does not start until gaps resolved',{tx:'#555',bg:'#f5f6f7',bd:'#d0d0d0'}]];
+  const kpis=[{m:'PPRC SLA compliance',t:'≥ 90%',w:'Below 80% triggers review',c:CC.PPRC},{m:'ASC/SPRC SLA compliance',t:'≥ 85%',w:'Below 75% triggers review',c:CC.ASC},{m:'ITSC scheduling SLA',t:'≥ 90%',w:'Below 80% triggers review',c:CC.ITSC},{m:'End-to-end cycle (large projects)',t:'≤ 30 days',w:'Above 40 days triggers review',c:{tx:'#633806',bg:'#FAEEDA',bd:'#854F0B'}},{m:'Open conditions overdue >30 days',t:'Target: 0',w:'More than 3 items → ITSC review',c:CC.SPRC},{m:'Decision log completeness',t:'100%',w:'Below 95% triggers coordinator review',c:{tx:'#27500A',bg:'#EAF3DE',bd:'#3B6D11'}}];
+  const breach=[{s:'First SLA breach',a:'Coordinator documents reason. Chair notified. No formal escalation.',bg:'#EAF3DE',tc:'#27500A',sev:'low'},{s:'Second or subsequent breach in the same quarter',a:'CIO notified. Root cause review required. ITSC reviews capacity.',bg:'#FAEEDA',tc:'#633806',sev:'medium'},{s:'Conditions overdue by 15 or more business days',a:'Auto-escalation to PPRC chair and project sponsor. Project cannot advance.',bg:'#FCEBEB',tc:'#791F1F',sev:'high'},{s:'Requestor fails to resolve intake gaps within 30 days',a:'Intake marked &quot;Withdrawn — Resubmit Required.&quot; Restart from RC-GOV-004.',bg:'#FAEEDA',tc:'#633806',sev:'medium'},{s:'Project proceeds without required committee approval',a:'CIO and ITSC notified immediately. Project on hold. Funding withheld.',bg:'#FCEBEB',tc:'#501313',sev:'critical'}];
+  return `<div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>SLA &amp;amp; service standards</div><div style=&quot;font-size:12px;color:#888&quot;>Response time commitments, escalation triggers, and performance metrics (RC-GOV-016).</div></div>
+<div style=&quot;background:#FAEEDA;border-left:3px solid #854F0B;padding:12px 14px;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start&quot;><span style=&quot;font-size:13px;font-weight:700;color:#633806;flex-shrink:0&quot;>Key rule:</span><div style=&quot;font-size:12px;color:#633806&quot;>The SLA clock starts when the Governance Coordinator confirms receipt of a <strong>complete</strong> intake package. Incomplete submissions are returned within 2 business days with a specific gap list. Resolving gaps restarts the clock.</div></div>
+<div class=&quot;card&quot; style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>Committee response time targets</div><div style=&quot;overflow-x:auto&quot;><table><thead><tr><th>Committee / activity</th><th>SLA trigger</th><th>Target</th><th>Escalation after</th><th>Notes</th></tr></thead><tbody>${rows.map((r,i)=>`<tr style=&quot;background:${i%2===0?'#f8f9fa':'#fff'}&quot;><td style=&quot;font-weight:600;color:${r[5].tx}&quot;>${r[0]}</td><td style=&quot;color:#555&quot;>${r[1]}</td><td style=&quot;font-weight:700;color:#854F0B;font-family:'Courier New',monospace;font-size:11px&quot;>${r[2]}</td><td style=&quot;color:#A32D2D;font-size:11px&quot;>${r[3]}</td><td style=&quot;color:#888;font-size:11px;font-style:italic&quot;>${r[4]}</td></tr>`).join('')}</tbody></table></div></div>
+<div class=&quot;card&quot; style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>Quarterly performance metrics</div><div style=&quot;display:grid;grid-template-columns:repeat(3,1fr);gap:8px&quot;>${kpis.map(k=>`<div style=&quot;background:${k.c.bg};border-left:2px solid ${k.c.bd};padding:12px&quot;><div style=&quot;font-size:16px;font-weight:700;color:${k.c.tx}&quot;>${k.t}</div><div style=&quot;font-size:11px;font-weight:600;color:#1a1a1a;margin-top:2px&quot;>${k.m}</div><div style=&quot;font-size:10px;color:#666;margin-top:2px&quot;>Warning: ${k.w}</div></div>`).join('')}</div></div>
+<div class=&quot;card&quot;><div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>SLA breach consequences</div>${breach.map((b,i)=>`<div style=&quot;display:flex;gap:10px;padding:8px 10px;background:${i%2===0?'#f8f9fa':'#fff'};border-radius:6px;margin-bottom:4px;align-items:flex-start&quot;><span class=&quot;chip&quot; style=&quot;background:${b.bg};color:${b.tc};flex-shrink:0;margin-top:1px&quot;>${b.sev}</span><div><div style=&quot;font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:2px&quot;>${b.s}</div><div style=&quot;font-size:11px;color:#666&quot;>${b.a}</div></div></div>`).join('')}</div>`;
+}
+
+
+const PATHS={
+small:{title:'Small project governance path',sub:'Under $50K \u00b7 PPRC review only (ASC/SPRC added only if triggered)',time:'5\u201315 business days total',col:CC.PPRC,steps:[
+  {n:1,title:'Complete pre-intake triage',who:'You',time:'< 5 min',doc:'RC-GOV-004',opt:false,req:false,cond:'',
+   desc:'Answer the 6-question triage tool to confirm governance applies and identify any committee triggers. For most small projects all six answers will be NO except Q1.',
+   out:['Path confirmed: PPRC-only review','Any triggers flagged before you invest time in the full form']},
+  {n:2,title:'Submit project intake form',who:'You + Business Owner',time:'1\u20132 days',doc:'RC-GOV-006',opt:false,req:false,cond:'',
+   desc:'Complete all sections including the Risk Pre-Screen (Section 5). The Business Owner named in the form must sign. Submit to the Governance Coordinator. The SLA clock starts only when the package is confirmed complete.',
+   out:['Package acknowledged within 1 business day','Completeness confirmed within 2 business days']},
+  {n:3,title:'PPRC review &amp; classification',who:'PPRC',time:'5 business days',doc:'RC-GOV-015',opt:false,req:false,cond:'',
+   desc:'PPRC reviews the intake, confirms Small classification, and completes the 7-Question Routing Decision Tree. For most small projects this is a light-touch review with a direct approval or approval with minor conditions.',
+   out:['Approve','Approve with conditions (tracked in RC-GOV-015)','Defer \u2014 more information needed','Reject \u2014 with documented rationale']},
+  {n:4,title:'ASC or SPRC review (if triggered)',who:'ASC and/or SPRC',time:'+10 business days per committee',doc:'RC-GOV-009, RC-GOV-015',opt:true,req:false,cond:'Only added if PPRC routing tree identifies a trigger \u2014 new integration (ASC) or sensitive data/new vendor (SPRC). Most small projects skip this step.',
+   desc:'If triggered by PPRC routing, the relevant committee reviews and issues a decision with any conditions. All conditions are documented in the Decision Log with named owners and due dates.',
+   out:['Approve','Approve with conditions','Reject']},
+  {n:5,title:'Decision confirmed \u2014 work authorised',who:'Governance Coordinator',time:'Same day as final decision',doc:'RC-GOV-015',opt:false,req:false,cond:'',
+   desc:'The decision is recorded in the Governance Decision Log. If approved, work is authorised to begin. Any conditions attached to the approval must be resolved and closed in RC-GOV-015 before advancing.',
+   out:['Work authorised','Conditions (if any) tracked to resolution in RC-GOV-015']},
+]},
+medium:{title:'Medium project governance path',sub:'$50K\u2013$100K \u00b7 PPRC + ASC and/or SPRC as triggered by the routing decision tree',time:'15\u201325 business days total',col:CC.ASC,steps:[
+  {n:1,title:'Complete pre-intake triage',who:'You',time:'< 5 min',doc:'RC-GOV-004',opt:false,req:false,cond:'',
+   desc:'Answer the 6-question triage tool. At the $50K threshold Q2 is YES so PPRC intake is required. Additional YES answers will flag ASC and/or SPRC reviews before you invest time in the full form.',
+   out:['Path confirmed: PPRC + triggered committees','Key risks identified before full form is drafted']},
+  {n:2,title:'Submit project intake form',who:'You + Business Owner',time:'2\u20133 days',doc:'RC-GOV-006',opt:false,req:false,cond:'',
+   desc:'Complete the full intake form carefully, especially Section 5 (Risk Pre-Screen). This section drives the PPRC routing determination. The Business Owner must sign. Submit to the Governance Coordinator.',
+   out:['Package acknowledged within 1 business day','Completeness confirmed within 2 business days']},
+  {n:3,title:'PPRC review &amp; routing determination',who:'PPRC Chair',time:'5 business days',doc:'RC-GOV-006 \u00a75, RC-GOV-015',opt:false,req:false,cond:'',
+   desc:'PPRC Chair completes the 7-Question Routing Decision Tree and formally records which committees are required. Project sponsors cannot self-determine that a triggered review does not apply. A waiver requires documented PPRC Chair rationale.',
+   out:['Classified as Medium','Routing recorded in RC-GOV-006 and RC-GOV-015','ASC and/or SPRC scheduled']},
+  {n:4,title:'ASC architecture review',who:'ASC',time:'10 business days',doc:'RC-GOV-009, RC-GOV-015',opt:true,req:false,cond:'Required if PPRC routing triggers ASC \u2014 integration, cloud/SaaS, or enterprise platform impact',
+   desc:'ASC reviews the proposed solution against enterprise standards and documents any conditions with named owners. All conditions must be resolved before the project advances to the next gate.',
+   out:['Approve','Approve with conditions','Exception required (ITSC notified)','Reject']},
+  {n:5,title:'SPRC security &amp; privacy review',who:'SPRC',time:'10 business days',doc:'RC-GOV-009, RC-GOV-010, RC-GOV-015',opt:true,req:false,cond:'Required if PPRC routing triggers SPRC \u2014 sensitive data, new vendor, or security posture change',
+   desc:'SPRC assesses risks and may issue a Risk Acceptance Memo for any residual risk rated High or Critical. That memo routes to ITSC for formal acceptance \u2014 the project team does not accept risk.',
+   out:['Approve','Approve with conditions','Risk Acceptance Memo required \u2014 routes to ITSC','Reject']},
+  {n:6,title:'Decision confirmed \u2014 work authorised',who:'PPRC + Governance Coordinator',time:'Immediately after final committee output',doc:'RC-GOV-015',opt:false,req:false,cond:'',
+   desc:'Once all triggered committee reviews are complete, the final decision is confirmed and recorded. If ITPF funding was requested, Gate 0 planning allocation opens here.',
+   out:['Work authorised','ITPF Gate 0 opened if funding requested','All conditions tracked in RC-GOV-015']},
+  {n:7,title:'Gate 2 closeout (ITPF projects only)',who:'You + Benefits Owner',time:'At project completion',doc:'RC-GOV-020',opt:true,req:false,cond:'Only for projects using IT Portfolio Fund funding',
+   desc:'File the Benefits Realization Plan and complete the 12-item Gate 2 checklist. The operations team formally accepts support responsibility before the gate is closed by ITSC.',
+   out:['Project record archived','Benefits Owner assigned','Sustainment activated']},
+]},
+large:{title:'Large project governance path',sub:'Over $100K or enterprise-wide \u00b7 All four committees required \u00b7 ITSC is the final authority',time:'25\u201340 business days total',col:CC.SPRC,steps:[
+  {n:1,title:'Pre-intake triage + alert Governance Coordinator',who:'You',time:'< 5 min',doc:'RC-GOV-004',opt:false,req:false,cond:'',
+   desc:'Answer the 6-question triage tool. Q6 (critical services/multi-year funding) will be YES, triggering ITSC. Contact the Governance Coordinator immediately \u2014 ITSC has a monthly meeting cycle and scheduling lead time matters.',
+   out:['Path confirmed: full governance path required','Governance Coordinator alerted to begin scheduling']},
+  {n:2,title:'Submit project intake form',who:'You + Business Owner',time:'3\u20135 days',doc:'RC-GOV-006',opt:false,req:false,cond:'',
+   desc:'Complete the full intake form with a detailed business case, full cost estimate, risk pre-screen, and proposed implementation approach. Quality here directly affects governance cycle time. Business Owner signature required.',
+   out:['Package acknowledged within 1 business day','Completeness confirmed within 2 business days']},
+  {n:3,title:'PPRC review &amp; routing',who:'PPRC Chair',time:'5 business days',doc:'RC-GOV-006 \u00a75, RC-GOV-015',opt:false,req:true,cond:'',
+   desc:'PPRC confirms Large classification and routes to all three downstream committees. ASC, SPRC, and ITSC are all required for Large projects \u2014 routing decision tree waiver provisions do not apply. Portfolio priority is set at this step.',
+   out:['Classified as Large','All three committees scheduled','Portfolio priority established']},
+  {n:4,title:'ASC architecture review',who:'ASC',time:'10 business days',doc:'RC-GOV-009, RC-GOV-015',opt:false,req:true,cond:'',
+   desc:'Required \u2014 no exception. ASC reviews the full solution architecture, enterprise standards compliance, integration plan, and long-term technical sustainability. All conditions documented with named owners and due dates.',
+   out:['Approve','Approve with conditions (must resolve before Gate 1)','Exception required (ITSC decides)','Reject']},
+  {n:5,title:'SPRC security &amp; privacy review',who:'SPRC',time:'10 business days',doc:'RC-GOV-009, RC-GOV-010, RC-GOV-015',opt:false,req:true,cond:'',
+   desc:'Required \u2014 no exception. SPRC assesses all security, privacy, and vendor risks. A Risk Acceptance Memo (RC-GOV-010) is expected for large projects. High or Critical residual risk is formally accepted by ITSC, not the project team.',
+   out:['Approve','Approve with conditions','Risk Acceptance Memo required \u2014 ITSC formally accepts','Reject']},
+  {n:6,title:'ITSC executive decision',who:'IT Steering Committee',time:'15 business days from all committee outputs',doc:'RC-GOV-011, RC-GOV-015',opt:false,req:true,cond:'',
+   desc:'ITSC receives the Governance Decision Brief summarising all prior committee outputs and conditions. ITSC votes on the enterprise commitment, authorises the ITPF funding gate, and formally accepts residual risk. Vote tally recorded in the Decision Log.',
+   out:['Approve \u2014 enterprise commitment made','Approve with conditions','Defer','Reject','Escalate to County Manager / County Board']},
+  {n:7,title:'ITPF Gate 0 \u2014 approve to plan',who:'You + PPRC',time:'Funded discovery period',doc:'ITPF Gate 0 submission',opt:false,req:false,cond:'',
+   desc:'ITSC authorises a small planning allocation. Validate feasibility, develop a detailed business case, confirm implementation approach and budget, and draft the sustainment plan required for Gate 1 approval.',
+   out:['Business case validated','Gate 1 submission prepared','Sustainment plan drafted']},
+  {n:8,title:'ITPF Gate 1 \u2014 approve to implement',who:'ITSC',time:'Per ITSC schedule',doc:'Gate 1 package, RC-GOV-015',opt:false,req:false,cond:'',
+   desc:'Full implementation funding released after Gate 1 approval. Requirements: baselined project plan, confirmed procurement approach, all committee conditions resolved, and sustainment plan with named owner and Year 2+ funding source.',
+   out:['Implementation funds released','Project team mobilised','Execution begins']},
+  {n:9,title:'Gate 2 closeout &amp; sustainment activation',who:'You + Benefits Owner + ITSC',time:'At project completion',doc:'RC-GOV-020',opt:false,req:false,cond:'',
+   desc:'Benefits Realization Plan filed. Operations team formally accepts support. All governance conditions confirmed closed in RC-GOV-015. ITSC formally closes the ITPF gate. Lessons learned submitted to Governance Coordinator.',
+   out:['Project record archived','Benefits Owner confirmed','Sustainment activated','ITPF gate closed']},
+]}
+};
+
+function goPath(sec,size){
+  if(size&amp;&amp;size!==sec){S.pathSize=size;}
+  S.sec='path';
+  render();buildNav();
+}
+
+function pathView(){
+  const sizes=[{k:'small',l:'Small project',sub:'Under $50K',c:CC.PPRC},{k:'medium',l:'Medium project',sub:'$50K\u2013$100K',c:CC.ASC},{k:'large',l:'Large project',sub:'Over $100K',c:CC.SPRC}];
+  const P=PATHS[S.pathSize];
+  const col=P.col;
+  const badge=(t,bg,tc)=>`<span style=&quot;background:${bg};color:${tc};border-radius:100px;padding:2px 9px;font-size:10px;font-weight:700;margin-right:4px;white-space:nowrap&quot;>${t}</span>`;
+  function stepCard(st,i){
+    const isLast=i===P.steps.length-1;
+    const circBg=st.req?col.bd:st.opt?'#e8e8e8':'#fff';
+    const circBd=st.opt?'#bbb':col.bd;
+    const circTx=st.req?'#fff':st.opt?'#888':col.bd;
+    return `<div style=&quot;display:flex;gap:0;margin-bottom:6px&quot;>
+      <div style=&quot;display:flex;flex-direction:column;align-items:center;width:34px;flex-shrink:0&quot;>
+        <div style=&quot;width:28px;height:28px;border-radius:50%;background:${circBg};border:2px solid ${circBd};display:flex;align-items:center;justify-content:center;flex-shrink:0&quot;>
+          <span style=&quot;font-size:11px;font-weight:700;color:${circTx}&quot;>${st.n}</span>
+        </div>
+        ${isLast?'':'<div style=&quot;width:2px;flex:1;min-height:8px;background:'+col.bd+'28;margin:2px 0&quot;></div>'}
+      </div>
+      <div style=&quot;flex:1;background:#fff;border:1px solid ${st.opt?'#e8e8e8':col.bd+'33'};border-radius:6px;padding:11px 13px;margin-left:8px;${st.opt?'opacity:0.82':''}&quot;>
+        <div style=&quot;display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:6px&quot;>
+          <div style=&quot;font-size:13px;font-weight:700;color:${st.opt?'#888':'#1a1a1a'};line-height:1.3&quot;>${st.title}</div>
+          ${st.req?badge('Required',col.bd,'#fff'):st.opt?badge('If triggered','#e0e0e0','#555'):''}
+        </div>
+        <div style=&quot;display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap&quot;>
+          ${badge('Who: '+st.who,col.bg,col.tx)}
+          ${badge('\u23f1 '+st.time,'#f5f6f7','#555')}
+          ${badge(st.doc,'#f0f0f0','#666')}
+        </div>
+        ${st.cond?`<div style=&quot;font-size:11px;color:${col.tx};background:${col.bg};border-radius:4px;padding:4px 9px;margin-bottom:8px;font-style:italic&quot;>\u2794 ${st.cond}</div>`:''}
+        <div style=&quot;font-size:12px;color:#444;line-height:1.6;margin-bottom:9px&quot;>${st.desc}</div>
+        <div style=&quot;border-top:1px solid #f0f0f0;padding-top:7px&quot;>
+          <div style=&quot;font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px&quot;>Possible outcomes</div>
+          <div style=&quot;display:flex;flex-wrap:wrap;gap:4px&quot;>${st.out.map(o=>`<span style=&quot;font-size:11px;background:#f8f9fa;border:1px solid #e8e8e8;border-radius:4px;padding:2px 8px;color:#333&quot;>&amp;#10003; ${o}</span>`).join('')}</div>
+        </div>
+      </div>
+    </div>`;
   }
-  renderMain();
+  return `<div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Governance paths</div><div style=&quot;font-size:12px;color:#888&quot;>Step-by-step process for each project size. Click a size to switch.</div></div>
+<div style=&quot;display:flex;gap:8px;margin-bottom:14px&quot;>${sizes.map(sz=>`<button onclick=&quot;S.pathSize='${sz.k}';render()&quot; style=&quot;flex:1;padding:10px 12px;border-radius:6px;cursor:pointer;font-family:'Segoe UI',sans-serif;border:2px solid ${S.pathSize===sz.k?sz.c.bd:'#e0e0e0'};background:${S.pathSize===sz.k?sz.c.bg:'#fff'};text-align:left&quot;><div style=&quot;font-size:12px;font-weight:700;color:${S.pathSize===sz.k?sz.c.tx:'#333'}&quot;>${sz.l}</div><div style=&quot;font-size:10px;color:${S.pathSize===sz.k?sz.c.tx:'#888'};margin-top:2px&quot;>${sz.sub}</div></button>`).join('')}</div>
+<div style=&quot;background:${col.bd};border-radius:8px;padding:13px 18px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px&quot;>
+  <div><div style=&quot;font-size:15px;font-weight:700;color:#fff&quot;>${P.title}</div><div style=&quot;font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px&quot;>${P.sub}</div></div>
+  <div style=&quot;background:rgba(255,255,255,0.15);border-radius:100px;padding:5px 14px;font-size:12px;font-weight:700;color:#fff&quot;>\u23f1 ${P.time}</div>
+</div>
+<div style=&quot;display:flex;gap:14px;font-size:11px;color:#888;margin-bottom:10px&quot;>
+  <span><span style=&quot;display:inline-block;width:11px;height:11px;border-radius:50%;background:${col.bd};vertical-align:middle;margin-right:4px&quot;></span>Required</span>
+  <span><span style=&quot;display:inline-block;width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid ${col.bd};vertical-align:middle;margin-right:4px&quot;></span>Standard</span>
+  <span><span style=&quot;display:inline-block;width:11px;height:11px;border-radius:50%;background:#e8e8e8;border:2px solid #bbb;vertical-align:middle;margin-right:4px&quot;></span>Conditional</span>
+</div>
+${P.steps.map((st,i)=>stepCard(st,i)).join('')}`;
 }
 
-function resetTriage(){STATE.tStep=0;STATE.tAnswers=[];STATE.tResult=null;renderMain();}
-
-/* ══════════════════════════════════════════════════════════════════════
-   SECTION: DOCUMENT LIBRARY
-══════════════════════════════════════════════════════════════════════ */
-function renderDocs(){
-  var filtered=DOCS.filter(function(d){
-    var mp=STATE.docPhase===0||d.ph===STATE.docPhase;
-    var ms=!STATE.docSearch||d.title.toLowerCase().indexOf(STATE.docSearch.toLowerCase())>-1||d.desc.toLowerCase().indexOf(STATE.docSearch.toLowerCase())>-1;
-    return mp&&ms;
-  });
-  var grouped=PHASES.map(function(p){
-    return {n:p.n,label:p.label,docs:filtered.filter(function(d){return d.ph===p.n;})};
-  }).filter(function(p){return p.docs.length;});
-
-  return '<div style="margin-bottom:14px">'
-    +'<div style="font-size:17px;font-weight:600;margin-bottom:3px">Document library</div>'
-    +'<div style="font-size:12px;color:#888">All 21 RC-GOV framework documents organized by governance phase.</div>'
-    +'</div>'
-    +'<div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap">'
-    +'<input type="search" placeholder="Search documents..." value="'+STATE.docSearch+'" style="max-width:220px">'
-    +'<button class="fbtn'+(STATE.docPhase===0?' on':'')+'" onclick="STATE.docPhase=0;renderMain()">All</button>'
-    +PHASES.map(function(p){
-      var isOn=STATE.docPhase===p.n;
-      return '<button class="fbtn'+(isOn?' on':'')+'" onclick="STATE.docPhase='+p.n+';renderMain()" style="'+(isOn?'background:'+PC[p.n].bg+';color:'+PC[p.n].tx+';border-color:'+PC[p.n].bd:'')+'">P'+p.n+'</button>';
-    }).join('')
-    +'</div>'
-    +grouped.map(function(ph){
-      return '<div style="margin-bottom:20px">'
-        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
-        +'<div style="width:22px;height:22px;border-radius:4px;background:'+PC[ph.n].bd+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'
-        +'<span style="font-size:11px;font-weight:700;color:#fff">'+ph.n+'</span></div>'
-        +'<span style="font-size:13px;font-weight:600;color:#1a1a1a">Phase '+ph.n+' — '+ph.label+'</span>'
-        +'<span style="font-size:11px;color:#888">('+ph.docs.length+' document'+(ph.docs.length!==1?'s':'')+')</span>'
-        +'</div>'
-        +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'
-        +ph.docs.map(function(d){
-          return '<div class="dcard">'
-            +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'
-            +'<span style="font-family:\'Courier New\',monospace;font-size:10px;font-weight:700;color:'+PC[d.ph].tx+';background:'+PC[d.ph].bg+';padding:2px 7px;border-radius:3px">RC-GOV-'+d.id+'</span>'
-            +'<span class="chip" style="background:'+TC[d.type].bg+';color:'+TC[d.type].tx+'">'+d.type+'</span>'
-            +'</div>'
-            +'<div style="font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:5px;line-height:1.35">'+d.title+'</div>'
-            +'<div style="font-size:11px;color:#666;line-height:1.5">'+d.desc+'</div>'
-            +'</div>';
-        }).join('')
-        +'</div></div>';
-    }).join('')
-    +(!grouped.length?'<div style="padding:32px;text-align:center;color:#888;font-size:13px">No documents match your filter. <button onclick="STATE.docSearch=\'\';STATE.docPhase=0;renderMain()" style="background:none;border:none;color:#185FA5;cursor:pointer;font-family:\'Segoe UI\',sans-serif;font-size:13px">Clear filters</button></div>':'');
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   SECTION: PROCESS FLOW
-══════════════════════════════════════════════════════════════════════ */
-function renderFlow(){
-  var lanes=[
-    {name:'PPRC',full:'Project & Portfolio Review',c:CC.PPRC},
-    {name:'ASC', full:'Architecture & Standards',  c:CC.ASC},
-    {name:'SPRC',full:'Security, Privacy & Risk',  c:CC.SPRC},
-    {name:'ITSC',full:'IT Steering Committee',      c:CC.ITSC},
-  ];
-  var rows=[
-    [
-      {t:'1. Intake & classification',steps:['Pre-triage (RC-GOV-004)','Complete intake form (RC-GOV-006)','Classify: Operational / Sm / Med / Lg','Confirm package completeness'],c:CC.PPRC},
-      {t:null,ph:'Awaiting PPRC routing'},
-      {t:null,ph:'Awaiting PPRC routing'},
-      {t:null,ph:'Awaiting committee outputs'},
-    ],[
-      {t:'2. Portfolio fit & routing',steps:['Strategic alignment check','Capacity vs. demand assessment','Complete 7Q routing decision tree','Record routing in RC-GOV-006 §5'],c:CC.PPRC},
-      {t:'If triggered: architecture review',steps:['Solution vs. enterprise standards','Cloud, integration & data impact','Approve / conditions / exception','Log in RC-GOV-015 decision log'],c:CC.ASC},
-      {t:'If triggered: security & privacy',steps:['Data classification & privacy impact','Vendor risk questionnaire','Risk treatment recommendation','Risk acceptance memo if needed'],c:CC.SPRC},
-      {t:'Large projects: executive decision',steps:['Portfolio trade-off review','All prior committee outputs reviewed','ITPF funding gate decision','Risk acceptance vote recorded'],c:CC.ITSC},
-    ],[
-      {t:'3. Ongoing portfolio monitoring',steps:['Monthly health reporting','Gate 1 readiness confirmation','Escalation tracking','Quarterly dashboard (RC-GOV-017)'],c:CC.PPRC},
-      {t:'As needed: design change review',steps:['Major design changes reviewed','Standards exceptions documented','Technical debt recorded'],c:CC.ASC},
-      {t:'As needed: risk monitoring',steps:['Security incidents tracked','Vendor risk updates','Annual risk acceptance review'],c:CC.SPRC},
-      {t:'As needed: major change oversight',steps:['Scope/budget changes > 20%','Portfolio re-prioritization','Additional ITPF gate decisions'],c:CC.ITSC},
-    ],
-  ];
-  var pathSizes=[
-    {s:'Operational',p:'IT Service Desk → standard change management → log for visibility. No committee review.',c:'#555',bg:'#f5f6f7'},
-    {s:'Small (< $50K)',p:'RC-GOV-004 triage → RC-GOV-006 intake → PPRC (5 days) → approved or routed. ASC/SPRC only if triggered.',c:CC.PPRC.tx,bg:CC.PPRC.bg},
-    {s:'Medium ($50K–$100K)',p:'RC-GOV-006 intake → PPRC (5 days, routing) → ASC (10 days, if triggered) → SPRC (10 days, if triggered) → approved.',c:CC.ASC.tx,bg:CC.ASC.bg},
-    {s:'Large (> $100K)',p:'RC-GOV-006 → PPRC → ASC (required) → SPRC (required) → ITSC (15 days from all committee outputs) → authorized.',c:CC.SPRC.tx,bg:CC.SPRC.bg},
-  ];
-
-  function cellHtml(cell){
-    if(!cell.t) return '<div class="sw-placeholder"><div style="font-size:11px;color:#aaa;text-align:center;font-style:italic">'+cell.ph+'</div></div>';
-    return '<div style="background:'+cell.c.bg+';border-left:2px solid '+cell.c.bd+';padding:10px 12px">'
-      +'<div style="font-size:11px;font-weight:600;color:'+cell.c.tx+';margin-bottom:6px">'+cell.t+'</div>'
-      +cell.steps.map(function(s){return '<div style="font-size:10px;color:#333;display:flex;gap:5px;margin-bottom:3px"><span style="color:'+cell.c.bd+';flex-shrink:0">&rarr;</span>'+s+'</div>';}).join('')
-      +'</div>';
-  }
-
-  return '<div style="margin-bottom:14px">'
-    +'<div style="font-size:17px;font-weight:600;margin-bottom:3px">Process flow</div>'
-    +'<div style="font-size:12px;color:#888">End-to-end journey from intake through Gate 2 closeout.</div>'
-    +'</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px">'
-    +lanes.map(function(l){return '<div style="background:'+l.c.bd+';border-radius:6px;padding:10px 12px;text-align:center">'
-      +'<div style="font-size:13px;font-weight:700;color:#fff">'+l.name+'</div>'
-      +'<div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px">'+l.full+'</div>'
-      +'</div>';}).join('')
-    +'</div>'
-    +rows.map(function(row){
-      return '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px">'
-        +row.map(function(cell){return cellHtml(cell);}).join('')
-        +'</div>';
-    }).join('')
-    +'<div style="background:#EAF3DE;border-radius:6px;padding:12px 16px;border:1px solid #3B6D11;margin-bottom:14px;display:flex;align-items:center;gap:10px">'
-    +'<span style="font-size:13px;font-weight:700;color:#27500A">Gate 2 — closeout &amp; sustainment activation</span>'
-    +'<span style="font-size:11px;color:#555">Benefits Realization Plan filed &middot; Operations team accepts support &middot; ITPF Gate 2 closed &middot; Lessons learned submitted</span>'
-    +'</div>'
-    +'<div class="card">'
-    +'<div style="font-size:13px;font-weight:600;margin-bottom:10px">Governance path by project size</div>'
-    +pathSizes.map(function(p){return '<div style="display:flex;gap:10px;padding:8px 10px;background:'+p.bg+';border-radius:6px;margin-bottom:6px;align-items:flex-start">'
-      +'<span style="font-size:12px;font-weight:700;color:'+p.c+';min-width:155px;flex-shrink:0">'+p.s+'</span>'
-      +'<span style="font-size:12px;color:#333;line-height:1.5">'+p.p+'</span>'
-      +'</div>';}).join('')
-    +'</div>';
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   SECTION: COMMITTEE HUB
-══════════════════════════════════════════════════════════════════════ */
-function renderComm(){
-  var c=COMM[STATE.comm];
-  var col=CC[STATE.comm];
-  return '<div style="margin-bottom:14px">'
-    +'<div style="font-size:17px;font-weight:600;margin-bottom:3px">Committee hub</div>'
-    +'<div style="font-size:12px;color:#888">Detailed reference for all four IT governance committees.</div>'
-    +'</div>'
-    +'<div style="display:flex;gap:6px;margin-bottom:14px">'
-    +['PPRC','ASC','SPRC','ITSC'].map(function(name){
-      var isOn=STATE.comm===name;
-      return '<button class="ctab" onclick="STATE.comm=\''+name+'\';renderMain()" style="'+(isOn?'background:'+CC[name].bg+';color:'+CC[name].tx+';border-color:'+CC[name].bd:'')+'">'+name+'</button>';
-    }).join('')
-    +'</div>'
-    +'<div style="background:'+col.bd+';border-radius:8px;padding:18px 20px;margin-bottom:12px">'
-    +'<div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:3px">'+STATE.comm+'</div>'
-    +'<div style="font-size:12px;color:rgba(255,255,255,0.78);margin-bottom:10px">'+c.full+'</div>'
-    +'<div style="background:rgba(255,255,255,0.13);border-radius:6px;padding:10px 14px;font-size:13px;color:#fff;font-style:italic;margin-bottom:12px">"'+c.q+'"</div>'
-    +'<div style="display:flex;gap:24px">'
-    +'<div><div style="font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.05em">SLA target</div><div style="font-size:16px;font-weight:700;color:#fff">'+c.sla+'</div></div>'
-    +'<div><div style="font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.05em">Chair</div><div style="font-size:16px;font-weight:700;color:#fff">'+c.chair+'</div></div>'
-    +'</div></div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">'
-    +'<div class="card">'
-    +'<div style="font-size:11px;font-weight:700;color:'+col.tx+';text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Voting seats</div>'
-    +c.voting.map(function(v,i){return '<div style="font-size:12px;color:#1a1a1a;padding:5px 0;border-bottom:'+(i<c.voting.length-1?'1px solid #eeeeee':'none')+'">'+v+'</div>';}).join('')
-    +'<div style="margin-top:10px;padding-top:10px;border-top:1px solid #eeeeee">'
-    +'<div style="font-size:10px;font-weight:700;color:#888;margin-bottom:4px">Quorum requirement</div>'
-    +'<div style="font-size:11px;color:#333;line-height:1.5">'+c.quorum+'</div>'
-    +'</div></div>'
-    +'<div class="card">'
-    +'<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Advisory (non-voting)</div>'
-    +c.advisory.map(function(a,i){return '<div style="font-size:12px;color:#666;padding:5px 0;border-bottom:'+(i<c.advisory.length-1?'1px solid #eeeeee':'none')+'">'+a+'</div>';}).join('')
-    +'</div></div>'
-    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">'
-    +'<div class="card">'
-    +'<div style="font-size:11px;font-weight:700;color:'+col.tx+';text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Review triggers</div>'
-    +c.triggers.map(function(t){return '<div style="display:flex;gap:6px;font-size:12px;color:#1a1a1a;padding:4px 0"><span style="color:'+col.bd+';flex-shrink:0">&rarr;</span>'+t+'</div>';}).join('')
-    +'</div>'
-    +'<div class="card">'
-    +'<div style="font-size:11px;font-weight:700;color:#27500A;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Decision outcomes</div>'
-    +c.outcomes.map(function(o){return '<div style="display:flex;gap:6px;font-size:12px;color:#1a1a1a;padding:4px 0"><span style="color:#3B6D11;flex-shrink:0">&#10003;</span>'+o+'</div>';}).join('')
-    +'</div>'
-    +'<div class="card">'
-    +'<div style="font-size:11px;font-weight:700;color:#791F1F;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Does not</div>'
-    +c.doesNot.map(function(d){return '<div style="display:flex;gap:6px;font-size:12px;color:#1a1a1a;padding:4px 0"><span style="color:#A32D2D;flex-shrink:0">&#10007;</span>'+d+'</div>';}).join('')
-    +'</div></div>'
-    +'<div class="card">'
-    +'<div style="font-size:11px;font-weight:700;color:#633806;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Escalation matrix</div>'
-    +'<table><thead><tr>'
-    +'<th style="width:42%">Escalation trigger</th><th>Required action</th>'
-    +'</tr></thead><tbody>'
-    +c.esc.map(function(row,i){return '<tr style="background:'+(i%2===0?'#f8f9fa':'#fff')+'">'
-      +'<td style="font-weight:600;color:#854F0B">'+row[0]+'</td>'
-      +'<td style="color:#555">'+row[1]+'</td>'
-      +'</tr>';}).join('')
-    +'</tbody></table></div>';
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   SECTION: SLA STANDARDS
-══════════════════════════════════════════════════════════════════════ */
-function renderSLA(){
-  var slaRows=[
-    ['PPRC — triage','Complete intake received','5 business days','CIO notified if no decision in 7 days','Includes routing determination',CC.PPRC],
-    ['ASC — architecture review','Architecture package complete','10 business days','CIO notified if 15 days elapsed','Complex systems may request 5-day extension',CC.ASC],
-    ['SPRC — security review','SPRC package (RC-GOV-009) complete','10 business days','CISO escalation if 15 days elapsed','Critical items: 5-day expedited path available',CC.SPRC],
-    ['ITSC — executive decision','All prior committee outputs received','15 business days','County manager notification if 25 days elapsed','ITSC meets monthly; expedited sessions available',CC.ITSC],
-    ['Conditions resolution','Condition date set at time of decision','Per condition due date','Escalate to PPRC/ITSC if 15+ days overdue','Project cannot advance gate until all conditions closed',{tx:'#633806',bg:'#FAEEDA',bd:'#854F0B'}],
-    ['Intake return — incomplete','Incomplete package submitted','2 business days to return with gap list','No escalation — responsibility lies with requestor','SLA clock does not start until gaps are resolved',{tx:'#555',bg:'#f5f6f7',bd:'#d0d0d0'}],
-  ];
-  var kpis=[
-    {m:'PPRC SLA compliance',t:'≥ 90%',w:'Below 80% triggers review',c:CC.PPRC},
-    {m:'ASC/SPRC SLA compliance',t:'≥ 85%',w:'Below 75% triggers review',c:CC.ASC},
-    {m:'ITSC scheduling SLA',t:'≥ 90%',w:'Below 80% triggers review',c:CC.ITSC},
-    {m:'End-to-end cycle (large projects)',t:'≤ 30 days',w:'Above 40 days triggers review',c:{tx:'#633806',bg:'#FAEEDA',bd:'#854F0B'}},
-    {m:'Open conditions overdue > 30 days',t:'Target: 0',w:'More than 3 items → ITSC review',c:CC.SPRC},
-    {m:'Decision log completeness',t:'100%',w:'Below 95% triggers coordinator review',c:{tx:'#27500A',bg:'#EAF3DE',bd:'#3B6D11'}},
-  ];
-  var breach=[
-    {s:'First SLA breach in a committee',a:'Coordinator documents reason. Chair notified. No formal escalation.',sev:'low',sc:'#27500A',bg:'#EAF3DE'},
-    {s:'Second or subsequent breach in the same quarter',a:'CIO notified. Root cause review required. ITSC reviews capacity.',sev:'medium',sc:'#633806',bg:'#FAEEDA'},
-    {s:'Conditions overdue by 15 or more business days',a:'Auto-escalation to PPRC chair and project sponsor. Project cannot advance.',sev:'high',sc:'#791F1F',bg:'#FCEBEB'},
-    {s:'Requestor fails to resolve intake gaps within 30 days',a:'Intake marked "Withdrawn — Resubmit Required." Restart from RC-GOV-004.',sev:'medium',sc:'#633806',bg:'#FAEEDA'},
-    {s:'Project proceeds without required committee approval',a:'CIO and ITSC notified immediately. Project placed on hold. Funding withheld.',sev:'critical',sc:'#501313',bg:'#FCEBEB'},
-  ];
-  return '<div style="margin-bottom:14px">'
-    +'<div style="font-size:17px;font-weight:600;margin-bottom:3px">SLA &amp; service standards</div>'
-    +'<div style="font-size:12px;color:#888">Response time commitments, escalation triggers, and governance performance metrics (RC-GOV-016).</div>'
-    +'</div>'
-    +'<div style="background:#FAEEDA;border-left:3px solid #854F0B;padding:12px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:flex-start">'
-    +'<span style="font-size:13px;font-weight:700;color:#633806;flex-shrink:0">Key rule:</span>'
-    +'<div style="font-size:12px;color:#633806">The SLA clock starts when the Governance Coordinator confirms receipt of a <strong>complete</strong> intake package. Incomplete submissions are returned within 2 business days with a specific gap list. Resolving gaps restarts the clock.</div>'
-    +'</div>'
-    +'<div class="card" style="margin-bottom:12px">'
-    +'<div style="font-size:13px;font-weight:600;margin-bottom:10px">Committee response time targets</div>'
-    +'<div style="overflow-x:auto"><table>'
-    +'<thead><tr style="background:#f8f9fa"><th>Committee / activity</th><th>SLA trigger</th><th>Target</th><th>Escalation after</th><th>Notes</th></tr></thead>'
-    +'<tbody>'
-    +slaRows.map(function(row,i){
-      var col=row[5];
-      return '<tr style="background:'+(i%2===0?'#f8f9fa':'#fff')+'">'
-        +'<td style="font-weight:600;color:'+col.tx+'">'+row[0]+'</td>'
-        +'<td style="color:#555">'+row[1]+'</td>'
-        +'<td style="font-weight:700;color:#854F0B;font-family:\'Courier New\',monospace;font-size:11px">'+row[2]+'</td>'
-        +'<td style="color:#A32D2D;font-size:11px">'+row[3]+'</td>'
-        +'<td style="color:#888;font-size:11px;font-style:italic">'+row[4]+'</td>'
-        +'</tr>';
-    }).join('')
-    +'</tbody></table></div></div>'
-    +'<div class="card" style="margin-bottom:12px">'
-    +'<div style="font-size:13px;font-weight:600;margin-bottom:10px">Quarterly performance metrics</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'
-    +kpis.map(function(k){return '<div style="background:'+k.c.bg+';border-left:2px solid '+k.c.bd+';padding:12px">'
-      +'<div style="font-size:16px;font-weight:700;color:'+k.c.tx+'">'+k.t+'</div>'
-      +'<div style="font-size:11px;font-weight:600;color:#1a1a1a;margin-top:3px">'+k.m+'</div>'
-      +'<div style="font-size:10px;color:#666;margin-top:3px">Warning: '+k.w+'</div>'
-      +'</div>';}).join('')
-    +'</div></div>'
-    +'<div class="card">'
-    +'<div style="font-size:13px;font-weight:600;margin-bottom:10px">SLA breach consequences</div>'
-    +breach.map(function(b,i){return '<div style="display:flex;gap:10px;padding:8px 10px;background:'+(i%2===0?'#f8f9fa':'#fff')+';border-radius:6px;margin-bottom:4px;align-items:flex-start">'
-      +'<span class="chip" style="background:'+b.bg+';color:'+b.sc+';flex-shrink:0;margin-top:1px">'+b.sev+'</span>'
-      +'<div>'
-      +'<div style="font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:2px">'+b.s+'</div>'
-      +'<div style="font-size:11px;color:#666">'+b.a+'</div>'
-      +'</div></div>';}).join('')
-    +'</div>';
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   INIT
-══════════════════════════════════════════════════════════════════════ */
-buildNav();
-renderMain();
-</script>
-</body>
-</html>
+buildNav();render();
+</script></body></html>
+" width="100%" height="700" frameborder="0" style="border:none;width:100%;display:block"></iframe>
