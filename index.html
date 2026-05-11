@@ -78,7 +78,7 @@ const CM={
 
 const GOV_BASE='https://ramseyco.sharepoint.com/:f:/r/sites/CIODirectReports-TechGovernance/Shared%20Documents/Tech%20Governance/IT%20Governance%20Documents%20for%20Review%20-%20New%20and%20Improved%20version?csf=1&amp;web=1&amp;e=aGc3ok';
 const ESG_BASE='https://ramseyco.sharepoint.com/:f:/r/sites/CIODirectReports-TechGovernance/Shared%20Documents/Tech%20Governance/IT%20Governance%20Documents%20for%20Review%20-%20New%20and%20Improved%20version/Enterprise%20system%20Governance_New?csf=1&amp;web=1&amp;e=p4dYt7';
-const S={sec:'dashboard',tStep:-1,tAns:[],tRes:null,comm:'PPRC',dPh:0,dSrch:'',pathSize:'small',esgTab:'overview',esgMode:false};
+const S={sec:'dashboard',tStep:-2,tAns:[],tRes:null,comm:'PPRC',dPh:0,dSrch:'',pathSize:'small',esgTab:'overview',esgMode:false,gateMode:''};
 const NAV=[{id:'dashboard',l:'Dashboard',i:'◈'},{id:'triage',l:'Triage wizard',i:'◎'},{id:'docs',l:'Document library',i:'▤'},{id:'flow',l:'Process flow',i:'⇢'},{id:'committees',l:'Committee hub',i:'◉'},{id:'sla',l:'SLA standards',i:'◇'},{id:'path',l:'Governance paths',i:'⬡'},{id:'esg',l:'Enterprise systems',i:'◊'}];
 
 function go(s){S.sec=s;render();buildNav();}
@@ -109,10 +109,30 @@ function dash(){
 
 // ── TRIAGE ─────────────────────────────────────────────────────────────────
 function triage(){
-  // Pre-question: is this about an existing enterprise system?
+  // Step -2: Gate A vs Gate B question
+  if(S.tStep===-2&amp;&amp;!S.tRes){
+    return `<div style=&quot;max-width:580px&quot;>
+    <div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Pre-intake triage — Step 1 of 8</div><div style=&quot;font-size:12px;color:#888&quot;>First, determine which gate applies to your request.</div></div>
+    <div class=&quot;card&quot; style=&quot;border:2px solid #185FA5;margin-bottom:10px&quot;>
+      <div style=&quot;display:inline-flex;background:#E6F1FB;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#185FA5;margin-bottom:10px&quot;>QUESTION 0 — GATE DETERMINATION</div>
+      <div style=&quot;font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:8px;line-height:1.45&quot;>Do you already know the solution — meaning you can answer Yes or No (not TBD) to all of these?</div>
+      <div style=&quot;background:#E6F1FB;padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;color:#0C447C;line-height:1.6&quot;>
+        <div style=&quot;margin-bottom:4px&quot;>&amp;#10003; The vendor or product has been identified or shortlisted</div>
+        <div style=&quot;margin-bottom:4px&quot;>&amp;#10003; The architecture has been designed by IS Architecture</div>
+        <div style=&quot;margin-bottom:4px&quot;>&amp;#10003; Detailed requirements have been documented</div>
+        <div>&amp;#10003; You can complete Section 5 (risk pre-screen) with real answers</div>
+      </div>
+      <div style=&quot;display:flex;gap:10px&quot;>
+        <button class=&quot;tqbtn&quot; onclick=&quot;setGateB()&quot; style=&quot;background:#534AB7;color:#fff;border-color:#534AB7&quot;>Yes — solution is known &amp;rarr; Gate B</button>
+        <button class=&quot;tqbtn&quot; onclick=&quot;setGateA()&quot; style=&quot;background:#185FA5;color:#fff;border-color:#185FA5&quot;>No — solution unknown &amp;rarr; Gate A first</button>
+        <button class=&quot;tqbtn&quot; onclick=&quot;setGateA()&quot; style=&quot;background:#f8f9fa;color:#666&quot;>Not sure &amp;rarr; Gate A (safe default)</button>
+      </div>
+    </div></div>`;
+  }
+  // Step -1: ESG pre-question (after Gate A/B is determined)
   if(S.tStep===-1&amp;&amp;!S.tRes){
     return `<div style=&quot;max-width:560px&quot;>
-    <div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Pre-intake triage wizard</div><div style=&quot;font-size:12px;color:#888&quot;>First, let\'s determine which governance path applies.</div></div>
+    <div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Pre-intake triage wizard</div><div style=&quot;font-size:12px;color:#888&quot;>First, let&amp;#39;s determine which governance path applies.</div></div>
     <div class=&quot;card&quot; style=&quot;margin-bottom:10px;border:2px solid #0F6E56&quot;>
       <div style=&quot;display:inline-flex;background:#E1F5EE;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#085041;margin-bottom:10px&quot;>STEP 0 OF 7</div>
       <div style=&quot;font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:8px;line-height:1.45&quot;>Is this work related to an existing enterprise system already in production?</div>
@@ -134,7 +154,7 @@ function triage(){
         <button class=&quot;tqbtn&quot; onclick=&quot;setEsgEnhancement()&quot; style=&quot;background:#f8f9fa;color:#666&quot;>No — enhancement, investment, or lifecycle decision</button>
       </div>
     </div>
-    <button onclick=&quot;resetT()&quot; style=&quot;padding:8px 18px;background:#fff;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:\'Segoe UI\',sans-serif;color:#333&quot;>&amp;#8634; Start over</button>
+    <button onclick=&quot;resetT()&quot; style=&quot;padding:8px 18px;background:#fff;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Segoe UI',sans-serif;color:#333&quot;>&amp;#8634; Start over</button>
     </div>`;
   }
   if(S.tRes){
@@ -167,10 +187,12 @@ function tAns(a){
   }else{S.tStep++;}
   render();
 }
+function setGateA(){S.gateMode='A';S.tStep=-1;render();}
+function setGateB(){S.gateMode='B';S.tStep=-1;render();}
 function setEsgMode(isEsg){S.esgMode=isEsg;S.tStep=isEsg?0:0;render();}
 function setEsgOperational(){S.tRes={path:'Operational work — ESOC governance only',desc:'Routine operational changes to enterprise systems are handled through ESOC and standard change management. No IT governance intake (RC-GOV-006) is required. Log the work and ensure IS/Capability Team executes under established change management procedures.',comms:[],sla:'No SLA — handled through change management',next:'Log in ESOC meeting or IS change management. No intake form needed.',bg:'#f5f6f7',bd:'#d0d0d0',tx:'#555'};render();}
 function setEsgEnhancement(){S.tRes={path:'Enterprise system enhancement — use ESG + IT governance',desc:'Enhancements, investments, or lifecycle decisions for existing enterprise systems must be classified (Operational / Small / Medium / Large) and routed through the appropriate governance path. The ESOC validates scope and escalates to PPRC via the standard IT intake form.',comms:['ESOC','PPRC'],sla:'Depends on classification: PPRC triage 5 days; ASC/SPRC 10 days each; ITSC 15 days from all committee outputs',next:'Complete RC-ESG-004 Quarterly Review or RC-ESG-005 Annual Plan to surface this item, then submit RC-GOV-004 triage + RC-GOV-006 intake to PPRC.',bg:'#E1F5EE',bd:'#0F6E56',tx:'#085041'};render();}
-function resetT(){S.tStep=-1;S.tAns=[];S.tRes=null;S.esgMode=false;render();}
+function resetT(){S.tStep=-2;S.tAns=[];S.tRes=null;S.esgMode=false;S.gateMode='';render();}
 
 // ── DOCS ───────────────────────────────────────────────────────────────────
 function docs(){
@@ -184,19 +206,201 @@ ${!grp.length?`<div style=&quot;padding:32px;text-align:center;color:#888;font-s
 
 // ── FLOW ───────────────────────────────────────────────────────────────────
 function flow(){
-  const rows=[
-    [{c:CC.PPRC,t:'1. Intake &amp; classification',s:['Pre-triage (RC-GOV-004)','Intake form (RC-GOV-006)','Classify size','Confirm completeness']},{ph:'Awaiting PPRC routing'},{ph:'Awaiting PPRC routing'},{ph:'Awaiting committee outputs'}],
-    [{c:CC.PPRC,t:'2. Portfolio fit &amp; routing',s:['Alignment check','Capacity assessment','7Q routing decision tree','Record in RC-GOV-006 §5']},{c:CC.ASC,t:'If triggered: architecture',s:['Solution vs. standards','Cloud, integration &amp; data','Approve / conditions / exception','Log in RC-GOV-015']},{c:CC.SPRC,t:'If triggered: security &amp; privacy',s:['Data classification','Vendor risk questionnaire','Risk treatment recommendation','Risk acceptance memo if needed']},{c:CC.ITSC,t:'Large projects: executive decision',s:['Portfolio trade-off review','All prior committee outputs','ITPF funding gate decision','Risk acceptance vote']}],
-    [{c:CC.PPRC,t:'3. Portfolio monitoring (ongoing)',s:['Monthly health reporting','Gate 1 readiness','Escalation tracking','Quarterly dashboard (RC-GOV-017)']},{c:CC.ASC,t:'As needed: design changes',s:['Major changes reviewed','Exceptions documented','Technical debt recorded']},{c:CC.SPRC,t:'As needed: risk monitoring',s:['Security incidents','Vendor risk updates','Annual risk acceptance review']},{c:CC.ITSC,t:'As needed: major changes',s:['Scope/budget changes >20%','Portfolio re-prioritization','Additional ITPF gate decisions']}],
-  ];
-  const paths=[{s:'Operational',p:'IT Service Desk → standard change management. No committee review.',c:'#555',bg:'#f5f6f7'},{s:'Small (<$50K)',p:'RC-GOV-004 triage → RC-GOV-006 intake → PPRC (5 days) → approved or routed.',c:CC.PPRC.tx,bg:CC.PPRC.bg},{s:'Medium ($50K–$100K)',p:'RC-GOV-006 → PPRC (5 days, routing) → ASC (10 days, if triggered) → SPRC (10 days, if triggered) → approved.',c:CC.ASC.tx,bg:CC.ASC.bg},{s:'Large (>$100K)',p:'RC-GOV-006 → PPRC → ASC (required) → SPRC (required) → ITSC (15 days) → authorized.',c:CC.SPRC.tx,bg:CC.SPRC.bg}];
-  const lanes=['PPRC','ASC','SPRC','ITSC'];
-  return `<div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Process flow</div><div style=&quot;font-size:12px;color:#888&quot;>End-to-end journey from intake through Gate 2 closeout.</div></div>
-<div style=&quot;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px&quot;>${lanes.map(n=>`<div style=&quot;background:${CC[n].bd};border-radius:6px;padding:10px 12px;text-align:center&quot;><div style=&quot;font-size:13px;font-weight:700;color:#fff&quot;>${n}</div><div style=&quot;font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px&quot;>${CM[n].full}</div></div>`).join('')}</div>
-${rows.map(row=>`<div style=&quot;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px&quot;>${row.map(cell=>cell.c?`<div style=&quot;background:${cell.c.bg};border-left:2px solid ${cell.c.bd};padding:10px 12px&quot;><div style=&quot;font-size:11px;font-weight:600;color:${cell.c.tx};margin-bottom:5px&quot;>${cell.t}</div>${cell.s.map(s=>`<div style=&quot;font-size:10px;color:#333;display:flex;gap:4px;margin-bottom:2px&quot;><span style=&quot;color:${cell.c.bd};flex-shrink:0&quot;>&amp;#8594;</span>${s}</div>`).join('')}</div>`:`<div style=&quot;background:#fafafa;border:1px dashed #d0d0d0;border-radius:6px;display:flex;align-items:center;justify-content:center;min-height:80px&quot;><div style=&quot;font-size:11px;color:#aaa;text-align:center;font-style:italic&quot;>${cell.ph}</div></div>`).join('')}</div>`).join('')}
-<div style=&quot;background:#EAF3DE;border-radius:6px;padding:12px 16px;border:1px solid #3B6D11;margin-bottom:12px;display:flex;align-items:center;gap:10px&quot;><span style=&quot;font-size:13px;font-weight:700;color:#27500A&quot;>Gate 2 — closeout &amp;amp; sustainment activation</span><span style=&quot;font-size:11px;color:#555&quot;>Benefits Realization Plan filed &amp;middot; Operations accepts support &amp;middot; ITPF Gate 2 closed &amp;middot; Lessons learned submitted</span></div>
-<div class=&quot;card&quot;><div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>Governance path by project size</div>${paths.map(p=>`<div style=&quot;display:flex;gap:10px;padding:8px 10px;background:${p.bg};border-radius:6px;margin-bottom:5px;align-items:flex-start&quot;><span style=&quot;font-size:12px;font-weight:700;color:${p.c};min-width:145px;flex-shrink:0&quot;>${p.s}</span><span style=&quot;font-size:12px;color:#333;line-height:1.5&quot;>${p.p}</span></div>`).join('')}</div>`;
+  // Gate A / Gate B toggle state
+  if(!S.flowGate) S.flowGate='B';
+
+  const gateToggleHtml=
+    '<div style=&quot;display:flex;gap:6px;margin-bottom:14px;align-items:center&quot;>'
+    +'<span style=&quot;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-right:4px&quot;>Showing:</span>'
+    +'<button onclick=&quot;S.flowGate=String.fromCharCode(65);render()&quot; style=&quot;padding:5px 14px;border-radius:100px;font-family:sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid '+(S.flowGate==='A'?'#185FA5':'#d0d0d0')+';background:'+(S.flowGate==='A'?'#E6F1FB':'#fff')+';color:'+(S.flowGate==='A'?'#185FA5':'#888')+'&quot;>Gate A — Whether &amp;amp; What</button>'
+    +'<button onclick=&quot;S.flowGate=String.fromCharCode(66);render()&quot; style=&quot;padding:5px 14px;border-radius:100px;font-family:sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid '+(S.flowGate==='B'?'#534AB7':'#d0d0d0')+';background:'+(S.flowGate==='B'?'#EEEDFE':'#fff')+';color:'+(S.flowGate==='B'?'#534AB7':'#888')+'&quot;>Gate B — Design, Budget &amp;amp; Risk</button>'
+    +'<button onclick=&quot;S.flowGate=String.fromCharCode(67);render()&quot; style=&quot;padding:5px 14px;border-radius:100px;font-family:sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid '+(S.flowGate==='C'?'#1B4F8A':'#d0d0d0')+';background:'+(S.flowGate==='C'?'#D6E4F0':'#fff')+';color:'+(S.flowGate==='C'?'#1B4F8A':'#888')+'&quot;>Both gates (end to end)</button>'
+    +'</div>';
+
+  if(S.flowGate==='A') return flowGateA(gateToggleHtml);
+  if(S.flowGate==='B') return flowGateB(gateToggleHtml);
+  return flowBoth(gateToggleHtml);
 }
+
+function flowGateA(toggle){
+  const GA={bd:'#185FA5',bg:'#E6F1FB',tx:'#0C447C'};
+  const IT={bd:'#534AB7',bg:'#EEEDFE',tx:'#3C3489'};
+  const GR={bd:'#375623',bg:'#EAF3DE',tx:'#27500A'};
+  const RD={bd:'#A32D2D',bg:'#FCEBEB',tx:'#791F1F'};
+
+  const lanes=[
+    {label:'Submitter',sub:'Anyone with a project idea',c:GA},
+    {label:'PPRC',sub:'Always reviews Gate A first',c:{bd:'#2E75B6',bg:'#D6E4F0',tx:'#1B4F8A'}},
+    {label:'ITSC',sub:'Medium &amp; Large only',c:IT},
+    {label:'Discovery team',sub:'IS Architecture + Business Owner',c:GR},
+  ];
+
+  const rows=[
+    [
+      {c:GA,t:'Step 1 — Triage (Q0)',s:['Answer Q0: Is solution known?','Q0 = No or Not Sure → Gate A','RC-GOV-004 triage tool']},
+      {ph:'Not involved yet'},
+      {ph:'Not involved yet'},
+      {ph:'Not involved yet'},
+    ],
+    [
+      {c:GA,t:'Step 2 — Submit Gate A form',s:['Problem statement','Strategic driver','Rough cost envelope','Discovery scope (6 deliverables)','Discovery budget &amp; timeline','Business Owner co-sign','RC-GOV-006A']},
+      {ph:'Waiting — reviewing queue'},
+      {ph:'Not involved yet'},
+      {ph:'Not involved yet'},
+    ],
+    [
+      {ph:'Submitted — awaiting PPRC'},
+      {c:{bd:'#2E75B6',bg:'#D6E4F0',tx:'#1B4F8A'},t:'Step 3 — PPRC review (5 days SLA)',s:['Is problem real &amp; County IT scope?','Is discovery justified?','Small → PPRC decides (full authority)','Medium/Large → PPRC recommends to ITSC','Produce one-page ITSC brief']},
+      {c:IT,t:'Medium/Large: ITSC receives brief',s:['Pre-brief from CIO (Large only)','Review PPRC recommendation','Schedule agenda item']},
+      {ph:'Not involved yet'},
+    ],
+    [
+      {ph:'Waiting for approval'},
+      {ph:'Complete — passed to ITSC'},
+      {c:IT,t:'Step 4 — ITSC decision (Medium/Large)',s:['Approve with budget cap + timeline','Approve — no ITPF funding (staff only)','Set boundary conditions (Large)','Defer to next cycle','Reject with rationale','15-day SLA from PPRC recommendation']},
+      {ph:'Not started yet'},
+    ],
+    [
+      {ph:'Notified of approval'},
+      {ph:'Monitors progress'},
+      {ph:'Notified of outcome'},
+      {c:GR,t:'Step 5 — Discovery phase',s:['Business requirements document','Architecture options analysis (2–3 options)','Vendor shortlist or RFP results','Revised cost estimate (±20–30%)','Risk identification list','Recommended approach','Typically 4–12 weeks within budget cap']},
+    ],
+    [
+      {c:GA,t:'Step 6 — Submit Gate B',s:['App auto-creates Gate B draft','Pre-filled from discovery outputs','Attach discovery report package','Review and submit RC-GOV-006B','Full Gate B review begins']},
+      {ph:'Gate B review begins'},
+      {ph:'Gate B review begins'},
+      {ph:'Discovery complete — handoff'},
+    ],
+  ];
+
+  const clsRows=[
+    {s:'Small',auth:'PPRC only (full authority)',budget:'Up to $5K',sla:'5 business days total',c:GR},
+    {s:'Medium',auth:'PPRC recommends → ITSC decides',budget:'$5K–$30K',sla:'20 business days + ITSC scheduling',c:GA},
+    {s:'Large',auth:'PPRC recommends → ITSC decides + boundary conditions',budget:'$15K–$60K',sla:'20 business days + ITSC scheduling',c:IT},
+  ];
+
+  return flowRender(toggle,lanes,rows,
+    '<div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Gate A — Whether &amp;amp; What</div>'
+    +'<div style=&quot;font-size:12px;color:#888&quot;>Discovery authorization process. Used when the vendor, architecture, or requirements are not yet known. Authorizes a time-boxed, budget-capped discovery phase.</div>',
+    '<div class=&quot;card&quot;><div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>Decision authority by classification</div>'
+    +clsRows.map(r=>'<div style=&quot;display:grid;grid-template-columns:70px 1fr 130px 130px;gap:8px;padding:8px 10px;background:'+r.c.bg+';border-radius:6px;margin-bottom:5px;align-items:center&quot;>'
+      +'<span style=&quot;font-size:11px;font-weight:700;color:'+r.c.tx+'&quot;>'+r.s+'</span>'
+      +'<span style=&quot;font-size:11px;color:#333&quot;>'+r.auth+'</span>'
+      +'<span style=&quot;font-size:10px;color:#555;font-style:italic&quot;>Discovery: '+r.budget+'</span>'
+      +'<span style=&quot;font-size:10px;color:#555;font-style:italic&quot;>'+r.sla+'</span>'
+      +'</div>').join('')+'</div>'
+  );
+}
+
+function flowGateB(toggle){
+  const lanes=[
+    {label:'PPRC',sub:'Routes every Gate B request',c:CC.PPRC},
+    {label:'ASC',sub:'Architecture &amp; standards (triggered)',c:CC.ASC},
+    {label:'SPRC',sub:'Security, privacy &amp; vendor risk (triggered)',c:CC.SPRC},
+    {label:'ITSC',sub:'Large / ITPF / High risk',c:CC.ITSC},
+  ];
+
+  const rows=[
+    [
+      {c:CC.PPRC,t:'1. Intake &amp; classification',s:['Pre-triage Q0 = Yes (solution known)','Complete RC-GOV-006B full intake','Classify: Small / Medium / Large','Coordinator confirms complete (2 days)']},
+      {ph:'Awaiting PPRC routing'},
+      {ph:'Awaiting PPRC routing'},
+      {ph:'Awaiting all committee outputs'},
+    ],
+    [
+      {c:CC.PPRC,t:'2. Portfolio fit &amp; routing (5 days)',s:['Portfolio alignment check','7-Question Routing Decision Tree','Confirms ASC / SPRC / ITSC triggers','Reviews discovery report if from Gate A','Records routing in RC-GOV-006B §5']},
+      {c:CC.ASC,t:'If triggered: architecture review (10 days)',s:['Reviews options analysis (Gate A) or spec','Solution vs enterprise standards','Cloud, integration &amp; data architecture','Approve / conditions / exception','Log in RC-GOV-015']},
+      {c:CC.SPRC,t:'If triggered: security &amp; privacy (10 days)',s:['Reviews shortlisted/selected vendor','Real SOC 2 / CJIS / HIPAA docs','Data flow &amp; contract terms review','Risk Acceptance Memo if High/Critical','Log in RC-GOV-015']},
+      {c:CC.ITSC,t:'Large / ITPF / High risk: executive decision (15 days)',s:['All committee outputs auto-assembled','Cost estimate with confidence level','ITPF funding gate decision','Residual risk acceptance vote','Checks Gate A boundary conditions']},
+    ],
+    [
+      {c:CC.PPRC,t:'3. Portfolio monitoring (ongoing)',s:['Gate 1 readiness checks','Condition tracking','Quarterly dashboard RC-GOV-017']},
+      {c:CC.ASC,t:'As needed: design changes',s:['Major architecture changes','Exception documentation','Technical debt recording']},
+      {c:CC.SPRC,t:'As needed: risk monitoring',s:['Security incidents','Vendor risk updates','Annual risk acceptance renewal']},
+      {c:CC.ITSC,t:'As needed: major changes',s:['Scope/budget changes >20%','Additional ITPF gate decisions','Portfolio re-prioritization']},
+    ],
+  ];
+
+  const paths=[
+    {s:'Operational',p:'IT Service Desk → standard change management. No committee review.',c:'#555',bg:'#f5f6f7'},
+    {s:'Small (under $50K)',p:'Gate B direct: RC-GOV-006B → PPRC (5 days) → ASC/SPRC if triggered → approved.',c:CC.PPRC.tx,bg:CC.PPRC.bg},
+    {s:'Medium ($50K–$500K)',p:'Gate B: RC-GOV-006B → PPRC (5 days) → ASC + SPRC (10 days each) → ITSC if ITPF or High risk → authorized.',c:CC.ASC.tx,bg:CC.ASC.bg},
+    {s:'Large (over $500K)',p:'Gate B: RC-GOV-006B → PPRC → ASC (required) → SPRC (required) → ITSC (15 days, required) → authorized. Checks Gate A boundary conditions if applicable.',c:CC.SPRC.tx,bg:CC.SPRC.bg},
+  ];
+
+  return flowRender(toggle,lanes,rows,
+    '<div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Gate B — Design, Budget &amp;amp; Risk</div>'
+    +'<div style=&quot;font-size:12px;color:#888&quot;>Implementation authorization. Used when solution is known. Pre-populated from discovery if Gate A was completed. All four committees may be involved depending on classification.</div>',
+    '<div style=&quot;background:#EAF3DE;border-radius:6px;padding:12px 16px;border:1px solid #3B6D11;margin-bottom:10px;display:flex;align-items:center;gap:10px&quot;>'
+    +'<span style=&quot;font-size:13px;font-weight:700;color:#27500A&quot;>Gate 2 — closeout &amp;amp; sustainment</span>'
+    +'<span style=&quot;font-size:11px;color:#555&quot;>Benefits Realization Plan filed · Operations accepts support · ITPF Gate 2 closed · Lessons learned submitted</span></div>'
+    +'<div class=&quot;card&quot;><div style=&quot;font-size:13px;font-weight:600;margin-bottom:10px&quot;>Governance path by project size (Gate B)</div>'
+    +paths.map(p=>'<div style=&quot;display:flex;gap:10px;padding:8px 10px;background:'+p.bg+';border-radius:6px;margin-bottom:5px;align-items:flex-start&quot;><span style=&quot;font-size:12px;font-weight:700;color:'+p.c+';min-width:160px;flex-shrink:0&quot;>'+p.s+'</span><span style=&quot;font-size:12px;color:#333;line-height:1.5&quot;>'+p.p+'</span></div>').join('')+'</div>'
+  );
+}
+
+function flowBoth(toggle){
+  const GA_C='#185FA5'; const GB_C='#534AB7';
+  const steps=[
+    {gate:'A',col:GA_C,bg:'#E6F1FB',n:'Q0',title:'Triage — Gate determination',who:'Submitter',detail:'Answer Q0: Is solution known? No → Gate A first. Yes → jump to Gate B directly.',doc:'RC-GOV-004'},
+    {gate:'A',col:GA_C,bg:'#E6F1FB',n:'A1',title:'Gate A — Submit discovery request',who:'Submitter + Business Owner',detail:'Problem statement, strategic driver, rough cost envelope, discovery scope, budget.',doc:'RC-GOV-006A'},
+    {gate:'A',col:GA_C,bg:'#E6F1FB',n:'A2',title:'Gate A — PPRC review (5 days)',who:'PPRC',detail:'Small: PPRC decides. Medium/Large: PPRC recommends to ITSC with one-page brief.',doc:'RC-GOV-015'},
+    {gate:'A',col:'#534AB7',bg:'#EEEDFE',n:'A3',title:'Gate A — ITSC decision (Medium/Large)',who:'ITSC',detail:'Approves discovery budget, timeline cap, and boundary conditions. 15-day SLA.',doc:'RC-GOV-015'},
+    {gate:'A',col:'#375623',bg:'#EAF3DE',n:'A4',title:'Discovery phase',who:'Discovery lead + IS',detail:'6 deliverables: requirements, architecture options, vendor shortlist, revised cost estimate (±20%), risk list, recommended approach.',doc:'DiscoveryRequests'},
+    {gate:'bridge',col:'#1B4F8A',bg:'#D6E4F0',n:'→',title:'Gate A closes → Gate B auto-created',who:'Power Automate',detail:'App pre-populates Gate B intake from discovery outputs. Submitter reviews and submits.',doc:'RC-GOV-006B (pre-filled)'},
+    {gate:'B',col:GB_C,bg:'#EEEDFE',n:'B1',title:'Gate B — PPRC routing (5 days)',who:'PPRC',detail:'Confirms classification. Routes to ASC/SPRC using the 7-Question Decision Tree. Reviews discovery report if Gate A was used.',doc:'RC-GOV-006B §5'},
+    {gate:'B',col:'#0F6E56',bg:'#E1F5EE',n:'B2',title:'Gate B — ASC review (10 days, if triggered)',who:'ASC',detail:'Reviews chosen architecture approach from discovery options analysis. Real design, not hypothetical.',doc:'RC-GOV-015'},
+    {gate:'B',col:'#A32D2D',bg:'#FCEBEB',n:'B3',title:'Gate B — SPRC review (10 days, if triggered)',who:'SPRC',detail:'Assesses actual shortlisted/selected vendor — real SOC 2/CJIS/HIPAA docs. Risk Acceptance Memo if High/Critical.',doc:'RC-GOV-015'},
+    {gate:'B',col:GB_C,bg:'#EEEDFE',n:'B4',title:'Gate B — ITSC decision (Large / ITPF / High risk)',who:'ITSC',detail:'Full committee output summary. Budget with confidence level. ITPF gate. Risk acceptance. Checks Gate A boundary conditions.',doc:'RC-GOV-015'},
+    {gate:'B',col:'#375623',bg:'#EAF3DE',n:'B5',title:'Approved — implementation begins',who:'Project team + IS',detail:'Work authorised. Conditions tracked to resolution. ITPF Gate 0/1 open if applicable.',doc:'RC-GOV-015, ITPFGates'},
+    {gate:'B',col:'#1B4F8A',bg:'#D6E4F0',n:'B6',title:'Gate 2 — closeout',who:'Benefits Owner + ITSC',detail:'Benefits Realization Plan filed. Operations team accepts. ITPF gate closed. Lessons learned submitted.',doc:'RC-GOV-020'},
+  ];
+
+  const gateLabel=(g)=>g==='A'?'Gate A':g==='bridge'?'Transition':g==='B'?'Gate B':'';
+  const gateLabelCol=(g)=>g==='A'?GA_C:g==='bridge'?'#1B4F8A':GB_C;
+
+  return '<div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>End-to-end — Gate A then Gate B</div>'
+    +'<div style=&quot;font-size:12px;color:#888&quot;>Full journey when discovery is needed before implementation. Use the tabs above to see each gate in detail.</div></div>'
+    +toggle
+    +steps.map((st,i)=>{
+      const isLast=i===steps.length-1;
+      return '<div style=&quot;display:flex;gap:0;margin-bottom:6px&quot;>'
+        +'<div style=&quot;display:flex;flex-direction:column;align-items:center;width:36px;flex-shrink:0&quot;>'
+        +'<div style=&quot;width:28px;height:28px;border-radius:50%;background:'+st.col+';display:flex;align-items:center;justify-content:center;flex-shrink:0&quot;>'
+        +'<span style=&quot;font-size:10px;font-weight:700;color:#fff&quot;>'+st.n+'</span>'
+        +'</div>'
+        +(isLast?'':'<div style=&quot;width:2px;flex:1;background:'+st.col+'30;margin:2px 0&quot;></div>')
+        +'</div>'
+        +'<div style=&quot;flex:1;background:'+st.bg+';border:1px solid '+st.col+'40;border-radius:6px;padding:10px 13px;margin-left:8px&quot;>'
+        +'<div style=&quot;display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;gap:8px&quot;>'
+        +'<div style=&quot;font-size:12px;font-weight:700;color:'+st.col+'&quot;>'+st.title+'</div>'
+        +'<span style=&quot;font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px;background:'+st.col+';color:#fff;white-space:nowrap;flex-shrink:0&quot;>'+gateLabel(st.gate)+'</span>'
+        +'</div>'
+        +'<div style=&quot;display:flex;gap:5px;margin-bottom:5px;flex-wrap:wrap&quot;>'
+        +'<span style=&quot;font-size:10px;background:rgba(255,255,255,0.7);border-radius:3px;padding:1px 6px;color:'+st.col+'&quot;>&amp;#128100; '+st.who+'</span>'
+        +'<span style=&quot;font-size:10px;background:rgba(255,255,255,0.7);border-radius:3px;padding:1px 6px;color:#555&quot;>'+st.doc+'</span>'
+        +'</div>'
+        +'<div style=&quot;font-size:11px;color:#333;line-height:1.5&quot;>'+st.detail+'</div>'
+        +'</div></div>';
+    }).join('');
+}
+
+function flowRender(toggle,lanes,rows,headerHtml,footerHtml){
+  return '<div style=&quot;margin-bottom:12px&quot;>'+headerHtml+'</div>'
+    +toggle
+    +'<div style=&quot;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px&quot;>'
+    +lanes.map(l=>'<div style=&quot;background:'+l.c.bd+';border-radius:6px;padding:10px 12px;text-align:center&quot;><div style=&quot;font-size:12px;font-weight:700;color:#fff&quot;>'+l.label+'</div><div style=&quot;font-size:10px;color:rgba(255,255,255,0.7);margin-top:2px&quot;>'+l.sub+'</div></div>').join('')
+    +'</div>'
+    +rows.map(row=>'<div style=&quot;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px&quot;>'
+      +row.map(cell=>cell.c
+        ?'<div style=&quot;background:'+cell.c.bg+';border-left:2px solid '+cell.c.bd+';padding:10px 12px;border-radius:0 6px 6px 0&quot;><div style=&quot;font-size:11px;font-weight:600;color:'+cell.c.tx+';margin-bottom:5px&quot;>'+cell.t+'</div>'+cell.s.map(s=>'<div style=&quot;font-size:10px;color:#333;display:flex;gap:4px;margin-bottom:2px&quot;><span style=&quot;color:'+cell.c.bd+';flex-shrink:0&quot;>&amp;#8594;</span>'+s+'</div>').join('')+'</div>'
+        :'<div style=&quot;background:#fafafa;border:1px dashed #d0d0d0;border-radius:6px;display:flex;align-items:center;justify-content:center;min-height:80px;padding:10px&quot;><div style=&quot;font-size:10px;color:#bbb;text-align:center;font-style:italic&quot;>'+cell.ph+'</div></div>'
+      ).join('')
+    +'</div>').join('')
+    +footerHtml;
+}
+
 
 // ── COMMITTEES ─────────────────────────────────────────────────────────────
 function comm(){
@@ -301,6 +505,70 @@ large:{title:'Large project governance path',sub:'Over $100K or enterprise-wide 
 ]}
 };
 
+
+const GATE_A_PATHS={
+small:{title:'Gate A -- Small project discovery path',sub:'Under $50K rough envelope -- PPRC decides alone',time:'5 business days',col:CC.PPRC,steps:[
+  {n:1,title:'Complete triage (Q0 + Q1-Q6)',who:'You',time:'<5 min',doc:'RC-GOV-004',opt:false,req:false,cond:'',
+   desc:'Q0 establishes Gate A applies (solution unknown). Q1-Q6 confirm Small classification. Rough cost envelope is all you need.',
+   out:['Gate A confirmed','Provisional classification: Small']},
+  {n:2,title:'Submit Gate A Discovery Authorization Form',who:'You + Business Owner',time:'1 day',doc:'RC-GOV-006A',opt:false,req:false,cond:'',
+   desc:'Problem statement, strategic driver, rough cost envelope, discovery scope (6 deliverables), and discovery budget (typically $2K-$5K). Business Owner co-signs.',
+   out:['Submission confirmed complete within 1 business day']},
+  {n:3,title:'PPRC reviews and decides',who:'PPRC',time:'5 business days',doc:'RC-GOV-015',opt:false,req:false,cond:'',
+   desc:'PPRC is the final authority for Small Gate A. No ITSC involvement unless PPRC chooses to escalate. Decision: Approve for discovery / Reclassify to Gate B direct / Reject.',
+   out:['Approve for discovery with budget cap and timeline','Reclassify -- enough known, go to Gate B','Reject -- documented rationale']},
+  {n:4,title:'Discovery executes',who:'Discovery lead + IS team',time:'4-8 weeks',doc:'DiscoveryRequests',opt:false,req:false,cond:'',
+   desc:'Produce 6 deliverables: requirements, architecture options, vendor shortlist, revised cost estimate (+-20%), risk identification list, recommended approach.',
+   out:['6 discovery deliverables complete','Revised cost estimate at +-20% confidence']},
+  {n:5,title:'Gate B intake auto-created -- submit for implementation approval',who:'You',time:'1-2 days',doc:'RC-GOV-006B',opt:false,req:false,cond:'',
+   desc:'Power Automate pre-populates the Gate B GovernanceRequests form from your discovery outputs. You review, attach the discovery report, and submit. Gate B then proceeds through the standard PPRC -> committees path.',
+   out:['Gate B submitted','Full governance review begins']},
+]},
+medium:{title:'Gate A -- Medium project discovery path',sub:'$50K-$500K rough envelope -- PPRC recommends, ITSC decides',time:'20 business days + scheduling',col:CC.ASC,steps:[
+  {n:1,title:'Complete triage + alert Governance Coordinator',who:'You',time:'<5 min',doc:'RC-GOV-004',opt:false,req:false,cond:'',
+   desc:'ITSC has a monthly meeting cycle. Alert the Governance Coordinator immediately so the ITSC agenda can be booked well in advance.',
+   out:['Gate A confirmed: Medium','Coordinator alerted to begin ITSC scheduling']},
+  {n:2,title:'Submit Gate A Discovery Authorization Form',who:'You + Business Owner',time:'2-3 days',doc:'RC-GOV-006A',opt:false,req:false,cond:'',
+   desc:'Problem statement, strategic driver, rough envelope ($50K-$500K), discovery scope, and discovery budget (typically $5K-$30K). Business Owner co-signs.',
+   out:['Submission confirmed complete']},
+  {n:3,title:'PPRC reviews and produces recommendation',who:'PPRC',time:'5 business days',doc:'RC-GOV-015',opt:false,req:false,cond:'',
+   desc:'PPRC validates the problem is real and County IT scope, confirms classification, and produces a one-page ITSC brief. PPRC does NOT make the final decision for Medium.',
+   out:['Recommendation: Approve / Reclassify to Gate B / Reject','One-page ITSC brief prepared']},
+  {n:4,title:'ITSC approves discovery',who:'ITSC',time:'15 business days from PPRC recommendation',doc:'RC-GOV-015',opt:false,req:true,cond:'',
+   desc:'ITSC agenda item (15-20 mins). Approves discovery budget, sets timeline hard stop, names discovery lead. May optionally set boundary conditions.',
+   out:['Approve with budget cap and timeline','Approve -- no funding (use staff capacity)','Defer to next cycle','Reject with rationale']},
+  {n:5,title:'Discovery executes',who:'Discovery lead + IS team',time:'6-10 weeks',doc:'DiscoveryRequests',opt:false,req:false,cond:'',
+   desc:'Produce 6 deliverables within ITSC-approved budget and timeline. PPRC monitors progress. ITSC informed if scope or budget needs to change.',
+   out:['6 discovery deliverables complete','Revised cost estimate at +-20% confidence']},
+  {n:6,title:'Gate B intake auto-created -- submit for implementation approval',who:'You',time:'2-3 days',doc:'RC-GOV-006B',opt:false,req:false,cond:'',
+   desc:'Gate B form pre-populated from discovery. Attach the discovery report package. Submit for full PPRC -> ASC -> SPRC -> ITSC review.',
+   out:['Gate B submitted','Full governance review with real architecture and vendor begins']},
+]},
+large:{title:'Gate A -- Large project discovery path',sub:'Over $500K rough envelope -- PPRC recommends, ITSC decides with boundary conditions',time:'20 business days + scheduling',col:CC.SPRC,steps:[
+  {n:1,title:'Complete triage + alert Governance Coordinator immediately',who:'You',time:'<5 min',doc:'RC-GOV-004',opt:false,req:false,cond:'',
+   desc:'Large Gate A is a strategic commitment. Contact the Coordinator the same day. CIO should be informed informally before formal PPRC submission.',
+   out:['Gate A confirmed: Large','Coordinator alerted','CIO informal briefing initiated']},
+  {n:2,title:'Submit Gate A Discovery Authorization Form',who:'You + Business Owner',time:'3-5 days',doc:'RC-GOV-006A',opt:false,req:false,cond:'',
+   desc:'Problem statement, strategic driver, rough envelope (over $500K), discovery scope (6 deliverables), discovery budget ($15K-$60K), and any initial boundary condition proposals.',
+   out:['Submission confirmed complete']},
+  {n:3,title:'PPRC reviews and produces recommendation + ITSC brief',who:'PPRC',time:'5 business days',doc:'RC-GOV-015',opt:false,req:false,cond:'',
+   desc:'PPRC produces a one-page ITSC brief within 5 business days. Brief includes: problem statement, strategic driver, PPRC recommendation, discovery scope and budget, named lead, rough implementation envelope, consequences of not investigating.',
+   out:['Recommendation produced','One-page ITSC brief delivered to Governance Coordinator']},
+  {n:4,title:'CIO pre-briefs ITSC members (informal)',who:'CIO',time:'Before ITSC meeting',doc:'N/A',opt:true,req:false,cond:'Recommended for all Large Gate A requests',
+   desc:'Large discovery is a strategic commitment. The CIO should brief ITSC members informally before the formal meeting to surface concerns early and avoid surprises.',
+   out:['ITSC members informed','Early concerns captured']},
+  {n:5,title:'ITSC formal decision with boundary conditions',who:'ITSC',time:'15 business days from PPRC recommendation',doc:'RC-GOV-015',opt:false,req:true,cond:'',
+   desc:'ITSC agenda item. For Large projects ITSC MUST set boundary conditions: must-haves, must-not-haves, solution cost ceiling, integration requirements, timeline constraints. These prevent wasted discovery work and a Gate B rejection.',
+   out:['Approve with budget cap, timeline, and boundary conditions','Approve no funding','Defer','Reject with rationale']},
+  {n:6,title:'Discovery executes within ITSC boundary conditions',who:'Discovery lead + IS team',time:'8-12 weeks',doc:'DiscoveryRequests',opt:false,req:false,cond:'',
+   desc:'All 6 deliverables produced within ITSC-approved budget, timeline, and boundary conditions. Mid-point update to ITSC if timeline exceeds 8 weeks. Any scope or budget change requires ITSC approval.',
+   out:['6 discovery deliverables complete','Revised cost estimate at +-20% confidence','Recommended approach within boundary conditions']},
+  {n:7,title:'Gate B intake auto-created -- submit for implementation approval',who:'You',time:'2-3 days',doc:'RC-GOV-006B',opt:false,req:false,cond:'',
+   desc:'Gate B form pre-populated from discovery. Full PPRC -> ASC -> SPRC -> ITSC review. ITSC will assess whether the recommended approach respects the boundary conditions they set at Gate A.',
+   out:['Gate B submitted','Full governance review begins with real architecture, vendor, and budget']},
+]},
+};
+
 function goPath(sec,size){
   if(size&amp;&amp;size!==sec){S.pathSize=size;}
   S.sec='path';
@@ -308,8 +576,18 @@ function goPath(sec,size){
 }
 
 function pathView(){
-  const sizes=[{k:'small',l:'Small project',sub:'Under $50K',c:CC.PPRC},{k:'medium',l:'Medium project',sub:'$50K\u2013$100K',c:CC.ASC},{k:'large',l:'Large project',sub:'Over $100K',c:CC.SPRC}];
-  const P=PATHS[S.pathSize];
+  var isGA=S.gateMode==='A';
+  var activeData=isGA?GATE_A_PATHS:PATHS;
+  var gB_style='padding:5px 14px;border-radius:100px;cursor:pointer;font-family:sans-serif;font-size:11px;font-weight:700;border:1.5px solid '+(isGA?'#e0e0e0':'#185FA5')+';background:'+(isGA?'#fff':'#E6F1FB')+';color:'+(isGA?'#888':'#0C447C');
+  var gA_style='padding:5px 14px;border-radius:100px;cursor:pointer;font-family:sans-serif;font-size:11px;font-weight:700;border:1.5px solid '+(isGA?'#185FA5':'#e0e0e0')+';background:'+(isGA?'#E6F1FB':'#fff')+';color:'+(isGA?'#0C447C':'#888');
+  var gateToggle='<div style=&quot;display:flex;gap:8px;margin-bottom:12px;align-items:center&quot;>'
+    +'<span style=&quot;font-size:11px;font-weight:600;color:#888;margin-right:4px&quot;>Gate:</span>'
+    +'<button style=&quot;'+gB_style+'&quot; onclick=&quot;S.gateMode=String.fromCharCode(66);render()&quot;>Gate B — Design, Budget &amp;amp; Risk</button>'
+    +'<button style=&quot;'+gA_style+'&quot; onclick=&quot;S.gateMode=String.fromCharCode(65);render()&quot;>Gate A — Discovery</button>'
+    +'<span style=&quot;font-size:11px;color:#aaa;margin-left:4px&quot;>'+(isGA?'Whether &amp;amp; What path':'Design, Budget &amp;amp; Risk path')+'</span>'
+    +'</div>';
+  const sizes=[{k:'small',l:'Small project',sub:isGA?'Under $50K rough envelope':'Under $50K',c:CC.PPRC},{k:'medium',l:'Medium project',sub:isGA?'$50K–$500K rough envelope':'$50K–$100K',c:CC.ASC},{k:'large',l:'Large project',sub:isGA?'Over $500K rough envelope':'Over $100K',c:CC.SPRC}];
+  const P=activeData[S.pathSize];
   const col=P.col;
   const badge=(t,bg,tc)=>`<span style=&quot;background:${bg};color:${tc};border-radius:100px;padding:2px 9px;font-size:10px;font-weight:700;margin-right:4px;white-space:nowrap&quot;>${t}</span>`;
   function stepCard(st,i){
@@ -343,7 +621,7 @@ function pathView(){
       </div>
     </div>`;
   }
-  return `<div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Governance paths</div><div style=&quot;font-size:12px;color:#888&quot;>Step-by-step process for each project size. Click a size to switch.</div></div>
+  return `<div style=&quot;margin-bottom:12px&quot;><div style=&quot;font-size:17px;font-weight:600;margin-bottom:2px&quot;>Governance paths</div><div style=&quot;font-size:12px;color:#888&quot;>Select gate type then project size to see the exact step-by-step path.')+'</div></div>'+gateToggle+'
 <div style=&quot;display:flex;gap:8px;margin-bottom:14px&quot;>${sizes.map(sz=>`<button onclick=&quot;S.pathSize='${sz.k}';render()&quot; style=&quot;flex:1;padding:10px 12px;border-radius:6px;cursor:pointer;font-family:'Segoe UI',sans-serif;border:2px solid ${S.pathSize===sz.k?sz.c.bd:'#e0e0e0'};background:${S.pathSize===sz.k?sz.c.bg:'#fff'};text-align:left&quot;><div style=&quot;font-size:12px;font-weight:700;color:${S.pathSize===sz.k?sz.c.tx:'#333'}&quot;>${sz.l}</div><div style=&quot;font-size:10px;color:${S.pathSize===sz.k?sz.c.tx:'#888'};margin-top:2px&quot;>${sz.sub}</div></button>`).join('')}</div>
 <div style=&quot;background:${col.bd};border-radius:8px;padding:13px 18px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px&quot;>
   <div><div style=&quot;font-size:15px;font-weight:700;color:#fff&quot;>${P.title}</div><div style=&quot;font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px&quot;>${P.sub}</div></div>
