@@ -159,10 +159,12 @@ function triage(){
   }
   if(S.tRes){
     const r=S.tRes;
+    const gateBadge=r.gateLabel?`<div style="display:inline-flex;align-items:center;gap:6px;background:${r.gateLabel==='A'?'#185FA5':'#534AB7'};color:#fff;padding:4px 12px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:0.04em;margin-bottom:10px">GATE ${r.gateLabel} \u2014 ${r.gateLabel==='A'?'Whether &amp; What (Discovery)':'Design, Budget &amp; Risk (Implementation)'}</div>`:'';
+    const answersBlock=S.tAns.length?`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px">Your answers</div>${S.tAns.map((a,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:5px 8px;border-radius:6px;background:${a==='yes'?'#E6F1FB':'#f5f5f5'};margin-bottom:3px"><span style="font-family:'Courier New',monospace;font-size:10px;color:#888;min-width:20px">Q${i+1}</span><span style="font-size:12px;color:#333;flex:1">${TQ[i]?TQ[i].q:''}</span><span style="font-size:11px;font-weight:700;color:${a==='yes'?'#185FA5':'#888'}">${a.toUpperCase()}</span></div>`).join('')}</div>`:'';
     return `<div style="max-width:560px"><div style="margin-bottom:12px"><div style="font-size:17px;font-weight:600;margin-bottom:2px">Pre-intake triage wizard</div><div style="font-size:12px;color:#888">Governance path determined from your answers.</div></div>
-<div style="background:${r.bg};border:1px solid ${r.bd};border-radius:8px;padding:20px;margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:${r.tx};letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px">Governance path determined</div><div style="font-size:21px;font-weight:700;color:${r.tx};margin-bottom:8px">${r.path}</div><div style="font-size:13px;color:#333;line-height:1.6;margin-bottom:12px">${r.desc}</div>${r.comms.length?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Required committees</div><div style="display:flex;gap:6px">${r.comms.map(c=>`<span style="padding:3px 12px;border-radius:100px;font-size:12px;font-weight:700;background:${CC[c].bd};color:#fff">${c}</span>`).join('')}</div></div>`:''}<div style="font-size:12px;color:#555"><span style="font-weight:600;color:#333">Expected timeline:</span> ${r.sla||'Operational — no governance needed'}</div></div>
+<div style="background:${r.bg};border:1px solid ${r.bd};border-radius:8px;padding:20px;margin-bottom:12px">${gateBadge}<div style="font-size:10px;font-weight:700;color:${r.tx};letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px">Governance path determined</div><div style="font-size:21px;font-weight:700;color:${r.tx};margin-bottom:8px">${r.path}</div><div style="font-size:13px;color:#333;line-height:1.6;margin-bottom:12px">${r.desc}</div>${r.comms.length?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Required committees</div><div style="display:flex;gap:6px">${r.comms.map(c=>`<span style="padding:3px 12px;border-radius:100px;font-size:12px;font-weight:700;background:${CC[c].bd};color:#fff">${c}</span>`).join('')}</div></div>`:''}<div style="font-size:12px;color:#555"><span style="font-weight:600;color:#333">Expected timeline:</span> ${r.sla||'Operational \u2014 no governance needed'}</div></div>
 ${r.next?`<div class="card" style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Next step</div><div style="font-size:13px;color:#1a1a1a">&#8594; ${r.next}</div></div>`:''}
-<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px">Your answers</div>${S.tAns.map((a,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:5px 8px;border-radius:6px;background:${a==='yes'?'#E6F1FB':'#f5f5f5'};margin-bottom:3px"><span style="font-family:'Courier New',monospace;font-size:10px;color:#888;min-width:20px">Q${i+1}</span><span style="font-size:12px;color:#333;flex:1">${TQ[i]?TQ[i].q:''}</span><span style="font-size:11px;font-weight:700;color:${a==='yes'?'#185FA5':'#888'}">${a.toUpperCase()}</span></div>`).join('')}</div>
+${answersBlock}
 <button onclick="resetT()" style="padding:8px 18px;background:#fff;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Segoe UI',sans-serif;color:#333">&#8634; Start over</button></div>`;
   }
   const q=TQ[S.tStep];
@@ -175,19 +177,36 @@ ${S.tAns.length?`<div class="card" style="background:#f8f9fa"><div style="font-s
 }
 function tAns(a){
   S.tAns.push(a);
-  if(S.tAns[0]==='no'){S.tRes={path:'Not in scope',desc:'This appears to be a non-technology business process request. IT governance does not apply. Log through the IT Service Desk.',comms:[],sla:null,next:null,bg:'#f5f6f7',bd:'#d0d0d0',tx:'#555'};}
+  if(S.tAns[0]==='no'){S.tRes={path:'Not in scope',desc:'This appears to be a non-technology business process request. IT governance does not apply. Log through the IT Service Desk.',comms:[],gateLabel:null,sla:null,next:null,bg:'#f5f6f7',bd:'#d0d0d0',tx:'#555'};}
   else if(S.tAns.length===TQ.length){
     const comms=['PPRC'];
     if(S.tAns[2]==='yes'||S.tAns[3]==='yes')comms.push('SPRC');
     if(S.tAns[4]==='yes')comms.push('ASC');
     if(S.tAns[5]==='yes')comms.push('ITSC');
-    if(S.tAns[5]==='yes')S.tRes={path:'Large project — full governance path',desc:'All four committees must review. ITSC is the final decision authority. Contact the Governance Coordinator immediately.',comms,sla:'25–35 business days (full path)',next:'Contact the Governance Coordinator. Complete RC-GOV-006 intake form.',bg:'#FCEBEB',bd:'#A32D2D',tx:'#791F1F'};
-    else if(S.tAns[1]==='yes'||comms.length>1)S.tRes={path:'Medium project',desc:'PPRC will classify and route to the triggered committees. Complete the full intake form.',comms,sla:'15–25 business days (triggered committees)',next:'Complete RC-GOV-006 Intake Form. Submit to the Governance Coordinator.',bg:'#FAEEDA',bd:'#854F0B',tx:'#633806'};
-    else S.tRes={path:'Small project',desc:'PPRC reviews within 5 business days of a complete intake package.',comms,sla:'5 business days (PPRC only)',next:'Complete RC-GOV-004 Triage Tool, then RC-GOV-006 Intake Form.',bg:'#E6F1FB',bd:'#185FA5',tx:'#0C447C'};
+    if(S.tAns[5]==='yes')S.tRes={path:'Gate B \u2014 Large project, full governance path',desc:'All four committees must review. ITSC is the final decision authority. Contact the Governance Coordinator immediately.',comms,gateLabel:'B',sla:'25\u201335 business days (full path)',next:'Contact the Governance Coordinator. Complete RC-GOV-006B Gate B Intake Form.',bg:'#FCEBEB',bd:'#A32D2D',tx:'#791F1F'};
+    else if(S.tAns[1]==='yes'||comms.length>1)S.tRes={path:'Gate B \u2014 Medium project',desc:'PPRC will classify and route to the triggered committees. Complete the full Gate B intake form.',comms,gateLabel:'B',sla:'15\u201325 business days (triggered committees)',next:'Complete RC-GOV-006B Gate B Intake Form. Submit to the Governance Coordinator.',bg:'#FAEEDA',bd:'#854F0B',tx:'#633806'};
+    else S.tRes={path:'Gate B \u2014 Small project',desc:'PPRC reviews within 5 business days of a complete intake package.',comms,gateLabel:'B',sla:'5 business days (PPRC only)',next:'Complete RC-GOV-006B Gate B Intake Form. PPRC is the final authority for Small Gate B.',bg:'#E6F1FB',bd:'#185FA5',tx:'#0C447C'};
   }else{S.tStep++;}
   render();
 }
-function setGateA(){S.gateMode='A';S.tStep=-1;render();}
+function setGateA(){
+  // Q0 = No or Not Sure: solution unknown -> Gate A discovery path.
+  // Q1-Q6 (sensitive data, vendors, integrations, etc.) cannot be answered
+  // accurately when the solution is not yet known. Route immediately to the
+  // Gate A result screen so the submitter goes to RC-GOV-006A.
+  S.gateMode='A';
+  S.tAns=[];
+  S.tRes={
+    path:'Gate A \u2014 Discovery authorization required',
+    desc:'Because the solution (vendor, architecture, and detailed requirements) is not yet known, you need Gate A first. Gate A authorizes a time-boxed, budget-capped discovery phase that produces the 6 required deliverables (requirements, options analysis, vendor shortlist, refined cost estimate at \u00B120-30%, risk identification, and recommended approach). When discovery completes, the app auto-creates a pre-filled Gate B intake for full governance review. Provisional classification is set from the rough cost envelope (\u00B150% is acceptable) on the form.',
+    comms:[],
+    gateLabel:'A',
+    sla:'PPRC review within 5 business days. Medium/Large then route to ITSC (15 days after PPRC recommendation, plus scheduling).',
+    next:'Complete RC-GOV-006A Gate A Discovery Authorization form. Skip Q1-Q6 of this triage \u2014 those questions need a defined solution to answer.',
+    bg:'#E6F1FB',bd:'#185FA5',tx:'#0C447C'
+  };
+  render();
+}
 function setGateB(){S.gateMode='B';S.tStep=-1;render();}
 function setEsgMode(isEsg){S.esgMode=isEsg;S.tStep=isEsg?0:0;render();}
 function setEsgOperational(){S.tRes={path:'Operational work — ESOC governance only',desc:'Routine operational changes to enterprise systems are handled through ESOC and standard change management. No IT governance intake (RC-GOV-006) is required. Log the work and ensure IS/Capability Team executes under established change management procedures.',comms:[],sla:'No SLA — handled through change management',next:'Log in ESOC meeting or IS change management. No intake form needed.',bg:'#f5f6f7',bd:'#d0d0d0',tx:'#555'};render();}
