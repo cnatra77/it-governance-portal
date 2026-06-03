@@ -458,8 +458,8 @@ function flowGateB(toggle){
   const paths=[
     {s:'Operational',p:'IT Service Desk → standard change management. No committee review.',c:'#555',bg:'#f5f6f7'},
     {s:'Small (under $50K)',p:'Gate B direct: RC-GOV-006B → PPRC (5 days) → ASC/SPRC if triggered → approved.',c:CC.PPRC.tx,bg:CC.PPRC.bg},
-    {s:'Medium ($50K–$500K)',p:'Gate B: RC-GOV-006B → PPRC (5 days) → ASC + SPRC (10 days each) → ITSC if ITPF or High risk → authorized.',c:CC.ASC.tx,bg:CC.ASC.bg},
-    {s:'Large (over $500K)',p:'Gate B: RC-GOV-006B → PPRC → ASC (required) → SPRC (required) → ITSC (15 days, required) → authorized. Checks Gate A boundary conditions if applicable.',c:CC.SPRC.tx,bg:CC.SPRC.bg},
+    {s:'Medium ($50K–$100K)',p:'Gate B: RC-GOV-006B → PPRC (5 days) → ASC + SPRC (10 days each) → ITSC if ITPF or High risk → authorized.',c:CC.ASC.tx,bg:CC.ASC.bg},
+    {s:'Large (over $100K)',p:'Gate B: RC-GOV-006B → PPRC → ASC (required) → SPRC (required) → ITSC (15 days, required) → authorized. Checks Gate A boundary conditions if applicable.',c:CC.SPRC.tx,bg:CC.SPRC.bg},
   ];
 
   return flowRender(toggle,lanes,rows,
@@ -807,12 +807,12 @@ small:{title:'Gate A -- Small project discovery path',sub:'Under $50K rough enve
    desc:'Power Automate pre-populates the Gate B GovernanceRequests form from your discovery outputs. You review, attach the discovery report, and submit. Gate B then proceeds through the standard PPRC -> committees path.',
    out:['Gate B submitted','Full governance review begins']},
 ]},
-medium:{title:'Gate A -- Medium project discovery path',sub:'$50K-$500K rough envelope -- PPRC recommends, ITSC decides',time:'20 business days + scheduling',col:CC.ASC,steps:[
+medium:{title:'Gate A -- Medium project discovery path',sub:'$50K-$100K rough envelope -- PPRC recommends, ITSC decides',time:'20 business days + scheduling',col:CC.ASC,steps:[
   {n:1,title:'Complete triage + alert Governance Coordinator',who:'You',time:'<5 min',doc:'RC-GOV-004',opt:false,req:false,cond:'',
    desc:'ITSC has a monthly meeting cycle. Alert the Governance Coordinator immediately so the ITSC agenda can be booked well in advance.',
    out:['Gate A confirmed: Medium','Coordinator alerted to begin ITSC scheduling']},
   {n:2,title:'Submit Gate A Discovery Authorization Form',who:'You + Business Owner',time:'2-3 days',doc:'RC-GOV-006A',opt:false,req:false,cond:'',
-   desc:'Problem statement, strategic driver, rough envelope ($50K-$500K), discovery scope, and discovery budget (typically $5K-$30K). Business Owner co-signs.',
+   desc:'Problem statement, strategic driver, rough envelope ($50K-$100K), discovery scope, and discovery budget (typically $5K-$30K). Business Owner co-signs.',
    out:['Submission confirmed complete']},
   {n:3,title:'PPRC reviews and produces recommendation',who:'PPRC',time:'5 business days',doc:'RC-GOV-015',opt:false,req:false,cond:'',
    desc:'PPRC validates the problem is real and County IT scope, confirms classification, and produces a one-page ITSC brief. PPRC does NOT make the final decision for Medium.',
@@ -827,12 +827,12 @@ medium:{title:'Gate A -- Medium project discovery path',sub:'$50K-$500K rough en
    desc:'Gate B form pre-populated from discovery. Attach the discovery report package. Submit for full PPRC -> ASC -> SPRC -> ITSC review.',
    out:['Gate B submitted','Full governance review with real architecture and vendor begins']},
 ]},
-large:{title:'Gate A -- Large project discovery path',sub:'Over $500K rough envelope -- PPRC recommends, ITSC decides with boundary conditions',time:'20 business days + scheduling',col:CC.SPRC,steps:[
+large:{title:'Gate A -- Large project discovery path',sub:'Over $100K rough envelope -- PPRC recommends, ITSC decides with boundary conditions',time:'20 business days + scheduling',col:CC.SPRC,steps:[
   {n:1,title:'Complete triage + alert Governance Coordinator immediately',who:'You',time:'<5 min',doc:'RC-GOV-004',opt:false,req:false,cond:'',
    desc:'Large Gate A is a strategic commitment. Contact the Coordinator the same day. CIO should be informed informally before formal PPRC submission.',
    out:['Gate A confirmed: Large','Coordinator alerted','CIO informal briefing initiated']},
   {n:2,title:'Submit Gate A Discovery Authorization Form',who:'You + Business Owner',time:'3-5 days',doc:'RC-GOV-006A',opt:false,req:false,cond:'',
-   desc:'Problem statement, strategic driver, rough envelope (over $500K), discovery scope (6 deliverables), discovery budget ($15K-$60K), and any initial boundary condition proposals.',
+   desc:'Problem statement, strategic driver, rough envelope (over $100K), discovery scope (6 deliverables), discovery budget ($15K-$60K), and any initial boundary condition proposals.',
    out:['Submission confirmed complete']},
   {n:3,title:'PPRC reviews and produces recommendation + ITSC brief',who:'PPRC',time:'5 business days',doc:'RC-GOV-015',opt:false,req:false,cond:'',
    desc:'PPRC produces a one-page ITSC brief within 5 business days. Brief includes: problem statement, strategic driver, PPRC recommendation, discovery scope and budget, named lead, rough implementation envelope, consequences of not investigating.',
@@ -869,7 +869,7 @@ function pathView(){
     +'<button style="'+gB_style+'" onclick="S.gateMode=String.fromCharCode(66);render()">Gate B — Design, Budget &amp; Risk</button>'
     +'<span style="font-size:11px;color:#aaa;margin-left:4px">'+(isGA?'Whether &amp; What path':'Design, Budget &amp; Risk path')+'</span>'
     +'</div>';
-  const sizes=[{k:'small',l:'Small project',sub:isGA?'Under $50K rough envelope':'Under $50K',c:CC.PPRC},{k:'medium',l:'Medium project',sub:isGA?'$50K–$500K rough envelope':'$50K–$100K',c:CC.ASC},{k:'large',l:'Large project',sub:isGA?'Over $500K rough envelope':'Over $100K',c:CC.SPRC}];
+  const sizes=[{k:'small',l:'Small project',sub:isGA?'Under $50K rough envelope':'Under $50K',c:CC.PPRC},{k:'medium',l:'Medium project',sub:isGA?'$50K–$100K rough envelope':'$50K–$100K',c:CC.ASC},{k:'large',l:'Large project',sub:isGA?'Over $100K rough envelope':'Over $100K',c:CC.SPRC}];
   const P=activeData[S.pathSize];
   const col=P.col;
   const badge=(t,bg,tc)=>`<span style="background:${bg};color:${tc};border-radius:100px;padding:2px 9px;font-size:10px;font-weight:700;margin-right:4px;white-space:nowrap">${t}</span>`;
@@ -941,8 +941,8 @@ const ESG_CADENCE=[
 const ESG_ROUTING=[
   {cls:'Operational',criteria:'Recurring/routine; no material capability change; within standards and budget',path:'ESOC visibility → IS/Capability Team executes under change management',auth:'IS Ops Management',bg:'#f5f6f7',c:'#555'},
   {cls:'Small (<$50K)',criteria:'Under $50K; low risk; limited enterprise impact',path:'Submit RC-GOV-006 intake → PPRC review → ASC/SPRC only if routing tree triggers',auth:'PPRC within delegated authority',bg:'#E6F1FB',c:'#0C447C'},
-  {cls:'Medium ($50K–$500K)',criteria:'Moderate integration, risk, or cross-department impact',path:'RC-GOV-006 → PPRC → ASC/SPRC as triggered → ITSC if escalated',auth:'CIO/exec as delegated',bg:'#FAEEDA',c:'#633806'},
-  {cls:'Large (>$500K)',criteria:'Multi-year, high-risk, statutory, or enterprise-wide impact',path:'Full governance path: PPRC → ASC → SPRC → ITSC (all required)',auth:'ITSC + County leadership',bg:'#FCEBEB',c:'#791F1F'},
+  {cls:'Medium ($50K–$100K)',criteria:'Moderate integration, risk, or cross-department impact',path:'RC-GOV-006 → PPRC → ASC/SPRC as triggered → ITSC if escalated',auth:'CIO/exec as delegated',bg:'#FAEEDA',c:'#633806'},
+  {cls:'Large (>$100K)',criteria:'Multi-year, high-risk, statutory, or enterprise-wide impact',path:'Full governance path: PPRC → ASC → SPRC → ITSC (all required)',auth:'ITSC + County leadership',bg:'#FCEBEB',c:'#791F1F'},
   {cls:'Lifecycle Decision',criteria:'Modernize / replace / retire — any cost if enterprise-wide',path:'RC-ESG-006 package → ASC → SPRC → ITSC. Submit RC-GOV-006 intake.',auth:'ITSC / County leadership',bg:'#EAD1DC',c:'#7030A0'},
 ];
 
